@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="shortcut icon" href="#" type="image/x-icon">
+    <title>KB 3</title>
+    <link rel="stylesheet" href="./index.css">
+</head>
+<body>
+    <div class="canvas-container">
+        <canvas id="board_canvas" width="1280px" height="720px"></canvas>
+        <canvas id="level_canvas" width="1280px" height="720px"></canvas>
+        <canvas id="enemies_canvas" width="1280px" height="720px"></canvas>
+        <canvas id="tower_canvas" width="1280px" height="720px"></canvas>
+        <canvas id="control_canvas" width="1280px" height="720px"></canvas>
+        <canvas id="extra_graphics" width="1280px" height="720px"></canvas>
+        <canvas id="level_text" width="1280px" height="720px"></canvas>
+        <canvas id="text" width="1280px" height="720px"></canvas>
+        <canvas id="ability_use" width="1280px" height="720px"></canvas>
+        <div class="shadow"></div>
+        <div class="actions"></div>
+        <div class="canvas_bg"></div>
+    </div>
+    <div class="window_options">
+        <p class="option option_active">Main Menu</p>
+        <p class="option" >Settings</p>
+        <p class="option" >Instructions</p>
+        <p class="option" >Level</p>
+        <p class="option" >Menu</p>
+        <p class="option" >Tower LevelUp</p>
+        <p class="option" >Player LevelUp</p>
+        <p class="option" >Game Win</p>
+        <p class="option" >Game Over</p>
+    </div>
+
+    <script>
+        let font1 = new FontFace("FredokaOne","url(./Assets/FredokaOne-Regular.ttf)")
+        font1.load().then((font) => {
+            document.fonts.add(font)
+        })
+        let font2 = new FontFace("TitanOne","url('./Assets/TitanOne-Regular.ttf')")
+        font2.load().then((font) => {
+            document.fonts.add(font)
+    
+        })
+    </script>
+    <script src="./controller.js"></script>
+    <script src="./view.js"></script>
+    <script src="./main.js"></script>
+</body>
+</html>
