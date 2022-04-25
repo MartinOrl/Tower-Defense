@@ -26,16 +26,25 @@ CanvasRenderingContext2D.prototype.borderThick = function (x, y, w, h, r,th) {
 }
 
 function createImage(data){
-
-    let image = new Image();
-    if(data.opacity){
-        console.log("Setting opacity for image")
-        data.context.globalAlpha = data.opacity
+    
+    if(data.image.type){
+        if(data.image.type == 'class'){
+          
+            data.context.drawImage(data.image.image,data.position.x, data.position.y, data.width, data.height)
+        }
     }
-    image.src = data.image;
-    image.onload = function(){
-        data.context.drawImage(image,data.position.x, data.position.y, data.width, data.height)
+    else{
+        let image = new Image();
+        if(data.opacity){
+          
+            data.context.globalAlpha = data.opacity
+        }
+        image.src = data.image;
+        image.onload = function(){
+            data.context.drawImage(image,data.position.x, data.position.y, data.width, data.height)
+        }
     }
+    
 }
 
 function renderExtraBoard(data){
@@ -74,6 +83,7 @@ function createText(data){
     }
    
     data.context.font = `${data.fontSize} ${data.font}`
+    data.context.textAlign = data.align
     data.context.fillText(data.text,data.position.x,data.position.y)
 }
 
@@ -81,9 +91,12 @@ function clearCanvas(canvas){
     canvas.getContext("2d").clearRect(0,0,canvas.width, canvas.height)
 }
 
-function setGameBackground(url){
-    document.querySelector(".canvas_bg").style.background = `url(${url})`
-}
+// function setGameBackground(url){
+//     console.log(document.querySelector(".canvas_bg").style.background)
+//     console.log(url)
+//     document.querySelector(".canvas_bg").style.background = `url(${url})`
+//     console.log(document.querySelector(".canvas_bg").style.background)
+// }
 
 function setGameBackgroundAlpha(alpha){
     document.querySelector("#board_canvas").style.zIndex = alpha ? 15 : 5
@@ -93,77 +106,11 @@ function setGameBackgroundAlpha(alpha){
     document.querySelector(".shadow").style.opacity = alpha ? 1 : 0
 }
 
-class Text{
-    constructor(text,font, fontSize, x, y,ctx){
-        this.text = text;
-        this.context = ctx ? ctx : document.querySelector("#text").getContext("2d");
-        this.position = {
-            x,y
-        }
-        this.font = font;
-        this.fontSize = `${fontSize}px`
-    }
-}
-
-class HeadingText extends Text{
-    constructor(text,font, fontSize, x,y,ctx=false){
-        super(text,font, fontSize, x,y,ctx)
-        
-        this.gradientData = {
-            angles: [0,180,0,0],
-            steps: [
-                [0,'#FAE90F'],
-                [0.4406, '#FAE90F'],
-                [1, '#F7BB1F']
-            ]
-        }
-        this.shadow = {
-            color: '#C43D1C',
-            offsetY: 3,
-            offsetX: 0,
-            blur: 0
-        }
-
-    }
-}
-
-class BasicText extends Text{
-    constructor(text,font, fontSize, x,y,ctx=false){
-        super(text,font, fontSize, x,y,ctx)
-        this.fill = '#fff'
-    }
-}
-
-class ExtraGraphic{
-    constructor(url,ctx,x,y,w,h){
-        this.image = url
-        this.context = ctx
-        this.position = {
-            x,y
-        }
-        this.width = w
-        this.height = h
-
-    }
-}
-
-class ExtraBoard{
-    constructor(ctx, x,y,w,h,fill=false){
-        this.context = ctx
-        this.position = {
-            x,y
-        }
-        this.width = w
-        this.height = h
-        this.fill = fill
-    }
-}
-
-
 class Renderer{
     constructor(parent, targetCanvas="", data=false){
         this.targetCanvas = targetCanvas ? targetCanvas : ''
         this.parent = parent
+        
         this.data = data ? data : {
             buttonsData: [],
             abilitiesData: [],
@@ -217,6 +164,24 @@ class Renderer{
 
     render(){
         let keys = Object.keys(this.data)
+        if(keys.includes("background")){
+            if(Object.keys(this.data.background).length != 0){
+                clearCanvas(document.querySelector("#board_canvas"))
+                createImage(this.data.background.boardData)
+                if(Object.keys(this.data.background).includes("ropes")){
+                    this.data.background.ropes.forEach(rope => {
+                        createImage(rope)
+                    })
+                }
+            }
+        }
+        if(keys.includes("extraBoard")){
+         
+            this.data.extraBoard.forEach(board => {
+                console.log(board)
+                renderExtraBoard(board)
+            })
+        }
         this.data.buttonsData.forEach(button => {
             createImage(button)
         })
@@ -233,29 +198,14 @@ class Renderer{
             })
         }
 
-        if(keys.includes("background")){
-            if(Object.keys(this.data.background).length != 0){
-                clearCanvas(document.querySelector("#board_canvas"))
-                createImage(this.data.background.boardData)
-                if(Object.keys(this.data.background).includes("ropes")){
-                    this.data.background.ropes.forEach(rope => {
-                        createImage(rope)
-                    })
-                }
-            }
-        }
+        
+        
         if(keys.includes("extraGraphics")){
             this.data.extraGraphics.forEach(extra => {
                 createImage(extra)
             })
         }
-        if(keys.includes("extraBoard")){
-         
-            this.data.extraBoard.forEach(board => {
-                console.log(board)
-                renderExtraBoard(board)
-            })
-        }
+        
 
     }
 
@@ -268,12 +218,13 @@ class MenuRenderer extends Renderer{
         this.canvasTarget = document.querySelector("#control_canvas")
         this.activeMenuWindow = 'main'
         this.windowsHistory = ['main']
+     
         this.menuData = {
             main: {
                 background: {
                     boardData: {
                         context: document.querySelector("#board_canvas").getContext("2d"),
-                        image: './Assets/Misc/board_high.webp',
+                        image: IMG_ASSETS_LIST.misc.board_high,
                         position: {
                             x: 371,
                             y: 70
@@ -282,26 +233,8 @@ class MenuRenderer extends Renderer{
                         height: 581
                     },
                     ropes: [
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 467,
-                                y: -218
-                            },
-                            width: 21,
-                            height: 317
-                        },
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 792,
-                                y: -218
-                            },
-                            width: 21,
-                            height: 317
-                        }
+                        new Rope(467,-218),
+                        new Rope(792,-218)
                     ]
                 },
                 textsData: [
@@ -309,6 +242,7 @@ class MenuRenderer extends Renderer{
                     new BasicText("© Martin Orlej, 2022", "FredokaOne", 16,562,600)
                 ],
                 buttonsData: [
+                    // new GameStateChangeButton("#control_canvas",537,252,205,78,"./Assets/Buttons/continue.webp", "game_state","play","continue_saved"),
                     {
                         clickEventData: {
                             action: ActionTypes.GAME_STATE_SET,
@@ -323,7 +257,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 205,
                         height: 78,
-                        image: './Assets/Buttons/continue.webp'
+                        image: IMG_ASSETS_LIST.buttons.continue
                     },
                     {
                         clickEventData: {
@@ -339,7 +273,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 249,
                         height: 78,
-                        image: './Assets/Buttons/newGame.webp'
+                        image: IMG_ASSETS_LIST.buttons.newGame
                     },
                     {
                         clickEventData: {
@@ -354,7 +288,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 96,
                         height: 96,
-                        image: './Assets/Buttons/settings.webp'
+                        image: IMG_ASSETS_LIST.buttons.settings
                     }
                 ]
             },
@@ -362,7 +296,7 @@ class MenuRenderer extends Renderer{
                 background: {
                     boardData: {
                         context: document.querySelector("#board_canvas").getContext("2d"),
-                        image: './Assets/Misc/board_med.webp',
+                        image: IMG_ASSETS_LIST.misc.board_med,
                         position: {
                             x: 369,
                             y: 56
@@ -371,26 +305,8 @@ class MenuRenderer extends Renderer{
                         height: 484
                     },
                     ropes: [
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 467,
-                                y: -218
-                            },
-                            width: 21,
-                            height: 317
-                        },
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 792,
-                                y: -218
-                            },
-                            width: 21,
-                            height: 317
-                        }
+                        new Rope(467,-218),
+                        new Rope(792,-218)
                     ]
                 },
                 textsData: [
@@ -409,7 +325,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 121,
                         height: 72,
-                        image: './Assets/Buttons/reset.webp'
+                        image: IMG_ASSETS_LIST.buttons.reset
                     },
                     {
                         clickEventData: {
@@ -424,7 +340,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 121,
                         height: 72,
-                        image: './Assets/Buttons/done.webp'
+                        image: IMG_ASSETS_LIST.buttons.done
                     },
                     {
                         clickEventData: {
@@ -439,7 +355,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 64,
                         height: 64,
-                        image: './Assets/Buttons/audio_mute.webp'
+                        image: IMG_ASSETS_LIST.buttons.audio_mute
                     },
                     {
                         clickEventData: {
@@ -454,7 +370,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 64,
                         height: 64,
-                        image: './Assets/Buttons/audio_on.webp'
+                        image: IMG_ASSETS_LIST.buttons.audio_on
                     },
                     {
                         clickEventData: {
@@ -469,7 +385,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 24,
                         height: 24,
-                        image: './Assets/Buttons/audio_decrease.webp'
+                        image: IMG_ASSETS_LIST.buttons.audio_decrease
                     },
                     {
                         clickEventData: {
@@ -484,13 +400,13 @@ class MenuRenderer extends Renderer{
                         },
                         width: 24,
                         height: 24,
-                        image: './Assets/Buttons/audio_add.webp'
+                        image: IMG_ASSETS_LIST.buttons.audio_add
                     },
 
                 ],
                 extraGraphics: [
-                    new ExtraGraphic('./Assets/Bars/bar_yellow_transparent.png',document.querySelector("#extra_graphics").getContext("2d"),520,242,240,14),
-                    new ExtraGraphic('./Assets/Bars/bar_yellow.png',document.querySelector("#extra_graphics").getContext("2d"),520,242,240,14),
+                    new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow_opaque,document.querySelector("#extra_graphics").getContext("2d"),520,242,240,14),
+                    new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,document.querySelector("#animations").getContext("2d"),520,242,240,14),
                     
                 ],
                 extraBoard: [
@@ -509,7 +425,7 @@ class MenuRenderer extends Renderer{
                 background: {
                     boardData: {
                         context: document.querySelector("#board_canvas").getContext("2d"),
-                        image: './Assets/Misc/board_wide.webp',
+                        image: IMG_ASSETS_LIST.misc.board_wide,
                         position: {
                             x: 317,
                             y: 157
@@ -518,26 +434,8 @@ class MenuRenderer extends Renderer{
                         height: 406
                     },
                     ropes: [
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 413,
-                                y: -120
-                            },
-                            width: 21,
-                            height: 317
-                        },
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 840,
-                                y: -120
-                            },
-                            width: 21,
-                            height: 317
-                        }
+                        new Rope(413,-120),
+                        new Rope(821,-120)
                     ]
                 },
                 textsData: [
@@ -557,7 +455,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 96,
                         height: 96,
-                        image: './Assets/Buttons/back.webp',
+                        image: IMG_ASSETS_LIST.buttons.back,
                     },
                     {
                         clickEventData: {
@@ -572,7 +470,7 @@ class MenuRenderer extends Renderer{
                         },
                         width: 96,
                         height: 96,
-                        image: './Assets/Buttons/resume.webp',
+                        image: IMG_ASSETS_LIST.buttons.resume,
                     },
                     {
                         clickEventData: {
@@ -587,23 +485,67 @@ class MenuRenderer extends Renderer{
                         },
                         width: 96,
                         height: 96,
-                        image: './Assets/Buttons/settings.webp',
+                        image: IMG_ASSETS_LIST.buttons.settings,
                     },
                 ]
             }
         }
+
+        this.animationFrame;
+       
     }
 
-    setAudioBarWidth(volume){
-        this.menuData.settings.extraGraphics[1].width = 240 * volume;
-        this.rerenderExtra()
+    updateAudioBarWidth(volume,step){
+        
+        this.menuData.settings.extraGraphics[1].width += step;
+  
+        this.rerenderExtra("animations")
+        
+        if(this.menuData.settings.extraGraphics[1].width > 240 * volume){
+            step > 0 ? this.animationFrame  = cancelAnimationFrame(this.animationFrame) : this.animationFrame = requestAnimationFrame(this.updateAudioBarWidth.bind(this,volume,step))
+        }
+        else{
+            step > 0 ? this.animationFrame = requestAnimationFrame(this.updateAudioBarWidth.bind(this,volume,step)) : this.animationFrame  = cancelAnimationFrame(this.animationFrame)
+        }
         
     }
+
+    setAudioBarWidth(volume,force=false){
+       
+        let oldWidth = this.menuData.settings.extraGraphics[1].width
+        let newWidth = 240 * volume;
+        let diff = newWidth - oldWidth;
+     
+        let step = diff / 8;
+
+        console.log({
+            oldVolume: this.parent.mainAudio.oldVolume,
+            currentVolume: this.parent.mainAudio.player.volume,
+            width: this.menuData.settings.extraGraphics[1].width,
+            newWidth:newWidth,
+            diff: diff,
+            step: step
+        })
+        
+        if(!force){
+            console.log("Animating")
+            this.animationFrame = requestAnimationFrame(this.updateAudioBarWidth.bind(this,volume,step))
+        }
+        else{
+            this.menuData.settings.extraGraphics[1].width = 240 * volume
+            this.menuData.settings.extraGraphics[1].image.image.width = 240 * volume
+        }
+       
+    }
+
+    
+  
+
     setActiveMenuWindow(window){
         if(window == 'return'){
             this.activeMenuWindow = this.windowsHistory[this.windowsHistory.length - 1]
             if(this.activeMenuWindow == 'settings'){
-                this.rerenderExtra()
+                this.rerenderExtra(["animations","extra_graphics"])
             }
         }
 
@@ -611,7 +553,7 @@ class MenuRenderer extends Renderer{
             this.windowsHistory.push(this.activeMenuWindow)
             this.activeMenuWindow = window
             if(this.activeMenuWindow == 'settings'){
-                this.rerenderExtra()
+                this.rerenderExtra(["animations","extra_graphics"])
             }
         }
 
@@ -623,15 +565,31 @@ class MenuRenderer extends Renderer{
                 this.createHTML()
             }
             if(this.activeMenuWindow == 'settings'){
-                this.rerenderExtra()
+                this.rerenderExtra(["animations","extra_graphics"])
             }
         }
     }
-    rerenderExtra(){
-        clearCanvas(document.querySelector("#extra_graphics"))
+    rerenderExtra(targets){
+ 
+        if(!Array.isArray(targets)){
+            targets = [targets]
+        }
+
+        targets.forEach(target => {
+            let canvas = "#" + target
+      
+            clearCanvas(document.querySelector(canvas))
+        })
         if(Object.keys(this.data).includes("extraGraphics")){
             this.data.extraGraphics.forEach(extra => {
-                createImage(extra)
+    
+                targets.forEach(target => {
+                   
+                    if(target == extra.context.canvas.id ){
+                        console.log("Rerendering canvas:",target)
+                        createImage(extra)
+                    }
+                })
             })
         }
     }
@@ -639,6 +597,7 @@ class MenuRenderer extends Renderer{
         clearCanvas(document.querySelector("#text"))
         clearCanvas(document.querySelector("#board_canvas"))
         clearCanvas(document.querySelector("#control_canvas"))
+        clearCanvas(document.querySelector("#animations"))
         clearCanvas(document.querySelector("#extra_graphics"))
         this.data = this.menuData[this.activeMenuWindow]
         this.render()
@@ -646,7 +605,6 @@ class MenuRenderer extends Renderer{
     }
     
 }
-
 
 class LevelDataRenderer extends Renderer{
     constructor(parent){
@@ -667,7 +625,7 @@ class LevelDataRenderer extends Renderer{
                     },
                     width: 64,
                     height: 64,
-                    image: './Assets/Buttons/pause.webp'
+                    image: IMG_ASSETS_LIST.buttons.pause
                 },
             ],
             abilitiesData:[
@@ -676,7 +634,8 @@ class LevelDataRenderer extends Renderer{
                     clickEventData: {
                         action: ActionTypes.ABILITY_USE,
                         abilityTarget: 'rock',
-                        fill: 'rgba(24, 23, 20, 0.45)'
+                        fill: 'rgba(24, 23, 20, 0.45)',
+                        manaCost: 40
                     },
                    
                     position: {
@@ -685,14 +644,15 @@ class LevelDataRenderer extends Renderer{
                     },
                     width: 80,
                     height: 80,
-                    image: './Assets/Abilities/rock.webp'
+                    image: IMG_ASSETS_LIST.abilities.ability_rocks
                 },
                 {
                     context: this.canvasTarget.getContext("2d"),
                     clickEventData: {
                         action: ActionTypes.ABILITY_USE,
                         abilityTarget: 'poison',
-                        fill: 'rgba(66, 255, 0, 0.3)'
+                        fill: 'rgba(66, 255, 0, 0.3)',
+                        manaCost: 60
                     },
                    
                     position: {
@@ -701,14 +661,15 @@ class LevelDataRenderer extends Renderer{
                     },
                     width: 80,
                     height: 80,
-                    image: './Assets/Abilities/poison.webp'
+                    image: IMG_ASSETS_LIST.abilities.ability_poison
                 },
                 {
                     context: this.canvasTarget.getContext("2d"),
                     clickEventData: {
                         action: ActionTypes.ABILITY_USE,
                         abilityTarget: 'freeze',
-                        fill: 'rgba(0, 209, 255, 0.3)'
+                        fill: 'rgba(0, 209, 255, 0.3)',
+                        manaCost: 40
                     },
                    
                     position: {
@@ -717,14 +678,15 @@ class LevelDataRenderer extends Renderer{
                     },
                     width: 80,
                     height: 80,
-                    image: './Assets/Abilities/freeze.webp'
+                    image: IMG_ASSETS_LIST.abilities.ability_freeze
                 },
                 {
                     context: this.canvasTarget.getContext("2d"),
                     clickEventData: {
                         action: ActionTypes.ABILITY_USE,
                         abilityTarget: 'fire',
-                        fill: 'rgba(255, 31, 0, 0.3)'
+                        fill: 'rgba(255, 31, 0, 0.3)',
+                        manaCost: 75
                     },
                    
                     position: {
@@ -733,7 +695,7 @@ class LevelDataRenderer extends Renderer{
                     },
                     width: 80,
                     height: 80,
-                    image: './Assets/Abilities/fire.webp'
+                    image: IMG_ASSETS_LIST.abilities.ability_fire
                 },
             ],
             textsData: [
@@ -741,16 +703,16 @@ class LevelDataRenderer extends Renderer{
                 new BasicText("Coins", "TitanOne", 16,56,69, document.querySelector("#level_text").getContext("2d")),
                 new BasicText("XP Points", "TitanOne", 16,56,151, document.querySelector("#level_text").getContext("2d")),
                 new BasicText("Mana", "TitanOne", 16,56,234, document.querySelector("#level_text").getContext("2d")),
-                new BasicText("0", "TitanOne", 16,268,105, document.querySelector("#level_text").getContext("2d")),
-                new BasicText("0", "TitanOne", 16,268,188, document.querySelector("#level_text").getContext("2d")),
-                new BasicText("150", "TitanOne", 16,268,234, document.querySelector("#level_text").getContext("2d")),
+                new BasicText("0", "TitanOne", 16,268,105, document.querySelector("#animations").getContext("2d")),
+                new BasicText("0", "TitanOne", 16,268,188, document.querySelector("#animations").getContext("2d")),
+                new BasicText("150", "TitanOne", 16,280,234, document.querySelector("#animations").getContext("2d"),"end"),
     
             ],
             extraGraphics: [
-                new ExtraGraphic('./Assets/Misc/gem.png',this.canvasTarget.getContext("2d", {alpha: false}),72,89,25,25),
-                new ExtraGraphic('./Assets/Misc/star.png',this.canvasTarget.getContext("2d", {alpha: false}),72,171,25,25),
-                new ExtraGraphic('./Assets/Bars/bar_blue_transparent.png',this.canvasTarget.getContext("2d", {alpha: false}),56,246,240,14),
-                new ExtraGraphic('./Assets/Bars/bar_blue.png',this.canvasTarget.getContext("2d", {alpha: false}),56,246,156,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.misc.gem,this.canvasTarget.getContext("2d", {alpha: false}),72,89,25,25),
+                new ExtraGraphic(IMG_ASSETS_LIST.misc.star,this.canvasTarget.getContext("2d", {alpha: false}),72,171,25,25),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue_opaque,this.canvasTarget.getContext("2d", {alpha: false}),56,246,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue,document.querySelector("#animations").getContext("2d", {alpha: false}),56,246,0,14),
             ],
             extraBoard: [
                 new ExtraBoard(this.canvasTarget.getContext("2d", {alpha: false}),56,82,240,40,'#3d291a'),
@@ -758,6 +720,64 @@ class LevelDataRenderer extends Renderer{
                 new ExtraBoard(this.canvasTarget.getContext("2d", {alpha: false}),24,24,304,268,'rgba(61, 41, 26, 0.65)'),
             ]
         }
+        this.animationFrame;
+    }
+
+    get getAnimationFrame(){
+        return this.animationFrame
+    }
+
+    cancelAnimationFrame(){
+        this.animationFrame = cancelAnimationFrame(this.animationFrame)
+    }
+
+    
+
+    animate(coef, step){
+        let flag = 0
+        this.data.extraGraphics[3].width += step
+        if(this.data.extraGraphics[3].width >= 240*coef){
+            this.data.extraGraphics[3].width = 240*coef
+            this.data.textsData[5].text = this.parent.playerEventManager.state.maxMana
+            this.animationFrame = this.cancelAnimationFrame(this.animationFrame)
+            flag = 1
+            return
+        }
+
+        clearCanvas(document.querySelector("#animations"))
+
+        this.data.textsData.forEach(text => {
+            if(text.context.canvas.id == 'animations'){
+                createText(text)
+            }
+        })
+        this.data.extraGraphics.forEach(graphic =>{
+            if(graphic.context.canvas.id == 'animations'){
+                createImage(graphic)
+            }
+        })
+        if(!flag){
+            this.animationFrame = requestAnimationFrame(this.animate.bind(this,coef,step))
+        }
+       
+    }
+
+    renderUpdate(forceQuit=false){
+        if(forceQuit){
+            this.cancelAnimationFrame()
+            return
+        }
+        if(this.parent.getMana <= this.parent.playerEventManager.state.maxMana){
+            this.data.textsData[5].text = this.parent.getMana.toFixed(0)
+
+        }
+      
+        let coef = Number((this.parent.getMana / this.parent.playerEventManager.state.maxMana).toPrecision(4))
+   
+        let step = 1/10
+
+        this.animate(coef,step)
+
     }
 }
 
@@ -769,7 +789,7 @@ class TowerLevelUpRenderer extends Renderer{
             background: {
                 boardData: {
                     context: document.querySelector("#board_canvas").getContext("2d"),
-                    image: './Assets/Misc/board_wide.webp',
+                    image: IMG_ASSETS_LIST.misc.board_wide,
                     position: {
                         x: 274,
                         y: 56
@@ -808,7 +828,7 @@ class TowerLevelUpRenderer extends Renderer{
                     },
                     width: 121,
                     height: 72,
-                    image: './Assets/Buttons/undo.webp'
+                    image: IMG_ASSETS_LIST.buttons.undo
                 },
                 {
                     clickEventData: {
@@ -824,7 +844,7 @@ class TowerLevelUpRenderer extends Renderer{
                     },
                     width: 121,
                     height: 72,
-                    image: './Assets/Buttons/done.webp'
+                    image: IMG_ASSETS_LIST.buttons.done
                 },
                 {
                     clickEventData: {
@@ -840,7 +860,7 @@ class TowerLevelUpRenderer extends Renderer{
                     },
                     width: 72,
                     height: 72,
-                    image: './Assets/Buttons/close.webp'
+                    image: IMG_ASSETS_LIST.buttons.close
                 },
                 {
                     clickEventData: {
@@ -853,7 +873,7 @@ class TowerLevelUpRenderer extends Renderer{
                     },
                     width: 155,
                     height: 62,
-                    image: './Assets/Buttons/upgrade.webp'
+                    image: IMG_ASSETS_LIST.buttons.upgrade
                 },
                 {
                     clickEventData: {
@@ -897,10 +917,10 @@ class TowerLevelUpRenderer extends Renderer{
             ],
             extraGraphics: [
                 new ExtraGraphic('./Assets/Towers/Archer_1.webp',document.querySelector("#extra_graphics").getContext("2d", {alpha: false}),366,211,187,227),
-                new ExtraGraphic('./Assets/Bars/bar_red.png',document.querySelector("#extra_graphics").getContext("2d", {alpha: false}),641,237,240,14),
-                new ExtraGraphic('./Assets/Bars/bar_yellow.png',document.querySelector("#extra_graphics").getContext("2d", {alpha: false}),641,301,240,14),
-                new ExtraGraphic('./Assets/Bars/bar_yellow.png',document.querySelector("#extra_graphics").getContext("2d", {alpha: false}),641,365,240,14),
-                new ExtraGraphic('./Assets/Bars/bar_yellow.png',document.querySelector("#extra_graphics").getContext("2d", {alpha: false}),641,429,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_red,document.querySelector("#extra_graphics").getContext("2d", {alpha: false}),641,237,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,document.querySelector("#extra_graphics").getContext("2d", {alpha: false}),641,301,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,document.querySelector("#extra_graphics").getContext("2d", {alpha: false}),641,365,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,document.querySelector("#extra_graphics").getContext("2d", {alpha: false}),641,429,240,14),
             
             ],
             extraBoard: [
@@ -919,7 +939,7 @@ class PlayerLevelUpRenderer extends Renderer{
             background: {
                 boardData: {
                     context: document.querySelector("#board_canvas").getContext("2d"),
-                    image: './Assets/Misc/board_high.webp',
+                    image: IMG_ASSETS_LIST.misc.board_high,
                     position: {
                         x: 274,
                         y: 56
@@ -940,14 +960,14 @@ class PlayerLevelUpRenderer extends Renderer{
                     },
                     width: 167,
                     height: 66,
-                    image: './Assets/Buttons/upgrade.webp'
+                    image: IMG_ASSETS_LIST.buttons.upgrade
                 },
                 {
                     clickEventData: {
                         action: ActionTypes.GAME_STATE_SET,
                         stateTarget: 'game_state',
-                        stateChange: 'play',
-                        playState: 'unpause'
+                        stateChange: 'unpause',
+                        playState: 'continue'
                     },
                     context: this.canvasTarget.getContext("2d", {alpha: false}),
                     position: {
@@ -956,14 +976,15 @@ class PlayerLevelUpRenderer extends Renderer{
                     },
                     width: 121,
                     height: 72,
-                    image: './Assets/Buttons/done.webp'
+                    image: IMG_ASSETS_LIST.buttons.done
                 },
                 {
                     clickEventData: {
                         action: ActionTypes.UPGRADE_PLAYER_SPEC,
+                        upgradeTarget: "bonusGold"
                     },
                     context: this.canvasTarget.getContext("2d", {alpha: false}),
-                    image: './Assets/Misc/price.webp',
+                    image: IMG_ASSETS_LIST.misc.price,
                     position: {
                         x: 876,
                         y: 230
@@ -974,9 +995,10 @@ class PlayerLevelUpRenderer extends Renderer{
                 {
                     clickEventData: {
                         action: ActionTypes.UPGRADE_PLAYER_SPEC,
+                        upgradeTarget: "bonusMana"
                     },
                     context: this.canvasTarget.getContext("2d", {alpha: false}),
-                    image: './Assets/Misc/price.webp',
+                    image: IMG_ASSETS_LIST.misc.price,
                     position: {
                         x: 876,
                         y: 298
@@ -987,9 +1009,10 @@ class PlayerLevelUpRenderer extends Renderer{
                 {
                     clickEventData: {
                         action: ActionTypes.UPGRADE_PLAYER_SPEC,
+                        upgradeTarget: "maxMana"
                     },
                     context: this.canvasTarget.getContext("2d", {alpha: false}),
-                    image: './Assets/Misc/price.webp',
+                    image: IMG_ASSETS_LIST.misc.price,
                     position: {
                         x: 876,
                         y: 362
@@ -1011,7 +1034,7 @@ class PlayerLevelUpRenderer extends Renderer{
                     },
                     width: 72,
                     height: 72,
-                    image: './Assets/Buttons/close.webp'
+                    image: IMG_ASSETS_LIST.buttons.close
                 },
                 
             ],
@@ -1028,17 +1051,22 @@ class PlayerLevelUpRenderer extends Renderer{
                 new BasicText("Bonus Mana","TitanOne",16,611,305),
                 new BasicText("Max Mana","TitanOne",16,611,375),
 
-                new BasicText("1","TitanOne",16,835,235),
-                new BasicText("1","TitanOne",16,835,305),
-                new BasicText("1","TitanOne",16,835,375),
+                new BasicText("0","TitanOne",16,835,235),
+                new BasicText("0","TitanOne",16,835,305),
+                new BasicText("100","TitanOne",16,816,375),
            
 
             ],
             extraGraphics: [
-                new ExtraGraphic('./Assets/Misc/player.webp',this.canvasTarget.getContext("2d", {alpha: false}), 336,189,187,227),
-                new ExtraGraphic('./Assets/Bars/bar_yellow.png',this.canvasTarget.getContext("2d", {alpha: false}), 611,250,240,14),
-                new ExtraGraphic('./Assets/Bars/bar_blue.png',this.canvasTarget.getContext("2d", {alpha: false}), 611,320,240,14),
-                new ExtraGraphic('./Assets/Bars/bar_blue.png',this.canvasTarget.getContext("2d", {alpha: false}), 611,390,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.misc.player,document.querySelector("#extra_graphics").getContext("2d", {alpha: false}), 336,189,187,227),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,document.querySelector("#animations").getContext("2d", {alpha: false}), 611,250,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue,document.querySelector("#animations").getContext("2d", {alpha: false}), 611,320,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue,document.querySelector("#animations").getContext("2d", {alpha: false}), 611,390,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow_opaque,this.canvasTarget.getContext("2d", {alpha: false}), 611,250,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue_opaque,this.canvasTarget.getContext("2d", {alpha: false}), 611,320,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue_opaque,this.canvasTarget.getContext("2d", {alpha: false}), 611,390,240,14),
+
+                
          
             ],
             extraBoard: [
@@ -1046,10 +1074,100 @@ class PlayerLevelUpRenderer extends Renderer{
            
             ]
         }
+        this.animationFrame;
+    }
+
+    animate(target,step,limit){
+        clearCanvas(document.querySelector("#animations"))
+
+       
+        let flag = 0
+        
+        this.data.extraGraphics.forEach(graphic => {
+            if(graphic.context.canvas.id == 'animations'){
+               
+                if(graphic === target){
+                
+                    
+                    graphic.width += step
+                   
+                    if(graphic.width >= 240*limit){
+                        graphic.width = 240*limit
+                        cancelAnimationFrame(this.animationFrame)
+                        flag = 1
+                    }
+                    
+
+                }
+                createImage(graphic)
+            }
+            
+        })
+
+        if(!flag){
+            this.animationFrame = requestAnimationFrame(this.animate.bind(this,target,step,limit))
+
+        }
+        
+        
+    }
+    
+    renderUpdate(){
+        
+        let updateTarget = false;
+        let step = false;
+        let limit = false
+
+        
+
+        
+        let playerDataState = this.parent.eventManagers[1].state
+        let playerDataMax = this.parent.eventManagers[1].maxValues
+
+       
+
+        if(this.data.extraGraphics[1].width != 240 * (playerDataState.bonusGold/5)){
+            updateTarget = this.data.extraGraphics[1]
+            step = (240 * (playerDataState.bonusGold/5)) / 48
+            limit = (playerDataState.bonusGold/5)
+        }
+        if(this.data.extraGraphics[2].width != 240 * (playerDataState.bonusMana/5)){
+            updateTarget = this.data.extraGraphics[2]
+            step = (240 * (playerDataState.bonusMana/5)) / 48
+            limit = (playerDataState.bonusMana/5)
+        }
+        if(this.data.extraGraphics[3].width != 240 * ((playerDataState.maxMana/playerDataMax.maxMana).toFixed(4))){
+            updateTarget = this.data.extraGraphics[3]
+            step = (240 * ((playerDataState.maxMana/playerDataMax.maxMana).toFixed(4))) / 48
+            limit = ((playerDataState.maxMana/playerDataMax.maxMana).toFixed(4))
+        }
+
+        if(!updateTarget){
+            return
+        }
+
+        
+        
+        // this.data.extraGraphics[1].width = 240*(playerDataState.bonusGold/5)
+        // this.data.extraGraphics[2].width = 240*(playerDataState.bonusMana/5)
+        // this.data.extraGraphics[3].width = 240*((playerDataState.maxMana/playerDataMax.maxMana).toFixed(4))
+        
+        this.data.textsData[9].text = playerDataState.bonusGold
+        this.data.textsData[10].text = playerDataState.bonusMana
+        this.data.textsData[11].text = playerDataState.maxMana
+
+        clearCanvas(document.querySelector("#text"))
+        
+       
+        this.data.textsData.forEach(text => {
+            createText(text)
+        })
+
+        this.animate(updateTarget,step, limit)
+     
+
     }
 }
-
-
 
 class InstructionsRenderer extends Renderer{
     constructor(parent){
@@ -1059,7 +1177,7 @@ class InstructionsRenderer extends Renderer{
             background: {
                 boardData: {
                     context: document.querySelector("#board_canvas").getContext("2d"),
-                    image: './Assets/Misc/board_wide.webp',
+                    image: IMG_ASSETS_LIST.misc.board_wide,
                     position: {
                         x: 156,
                         y: 56
@@ -1068,26 +1186,8 @@ class InstructionsRenderer extends Renderer{
                     height: 552
                 },
                 ropes: [
-                    {
-                        context: this.canvasTarget.getContext("2d"),
-                        image: './Assets/Misc/rope.webp',
-                        position: {
-                            x: 467,
-                            y: -218
-                        },
-                        width: 21,
-                        height: 317
-                    },
-                    {
-                        context: this.canvasTarget.getContext("2d"),
-                        image: './Assets/Misc/rope.webp',
-                        position: {
-                            x: 792,
-                            y: -218
-                        },
-                        width: 21,
-                        height: 317
-                    }
+                    new Rope(467,-218),
+                    new Rope(792,-218)
                 ]
             },
             buttonsData: [
@@ -1105,7 +1205,7 @@ class InstructionsRenderer extends Renderer{
                     },
                     width: 205,
                     height: 67,
-                    image: './Assets/Buttons/play.png'
+                    image: IMG_ASSETS_LIST.buttons.play
                 },
                 
             ],
@@ -1135,7 +1235,7 @@ class GameStatusRenderer extends Renderer{
                 background: {
                     boardData: {
                         context: document.querySelector("#board_canvas").getContext("2d"),
-                        image: './Assets/Misc/board_high.webp',
+                        image: IMG_ASSETS_LIST.misc.board_high,
                         position: {
                             x: 371,
                             y: 70
@@ -1144,26 +1244,10 @@ class GameStatusRenderer extends Renderer{
                         height: 581
                     },
                     ropes: [
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 467,
-                                y: -218
-                            },
-                            width: 21,
-                            height: 317
-                        },
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 793,
-                                y: -218
-                            },
-                            width: 21,
-                            height: 317
-                        }
+                     
+                        new Rope(467,-218),
+                        new Rope(792,-218)
+                      
                     ]
                 },
            
@@ -1181,7 +1265,7 @@ class GameStatusRenderer extends Renderer{
                         },
                         width: 96,
                         height: 96,
-                        image: './Assets/Buttons/menu.webp',
+                        image: IMG_ASSETS_LIST.buttons.menu,
                     },
                     {
                         clickEventData: {
@@ -1196,7 +1280,7 @@ class GameStatusRenderer extends Renderer{
                         },
                         width: 96,
                         height: 96,
-                        image: './Assets/Buttons/nextLevel.webp',
+                        image: IMG_ASSETS_LIST.buttons.nextLevel,
                     },
                     {
                         clickEventData: {
@@ -1211,7 +1295,7 @@ class GameStatusRenderer extends Renderer{
                         },
                         width: 194,
                         height: 80,
-                        image: './Assets/Buttons/upgrade.webp'
+                        image: IMG_ASSETS_LIST.buttons.upgrade
                     },
                 ],
                 textsData: [
@@ -1219,16 +1303,16 @@ class GameStatusRenderer extends Renderer{
                     new HeadingText("+ 5", "FredokaOne", 48,572,415)
                 ],
                 extraGraphics: [
-                    new ExtraGraphic('./Assets/Misc/win_star.webp', this.canvasTarget.getContext("2d", {alpha: false}),515,181,250,138),
-                    new ExtraGraphic('./Assets/Misc/win.webp', this.canvasTarget.getContext("2d", {alpha: false}),515,69,250,102),
-                    new ExtraGraphic('./Assets/Misc/Star.png', this.canvasTarget.getContext("2d", {alpha: false}),655,372,48,48),
+                    new ExtraGraphic(IMG_ASSETS_LIST.misc.win_star, this.canvasTarget.getContext("2d", {alpha: false}),515,181,250,138),
+                    new ExtraGraphic(IMG_ASSETS_LIST.misc.win, this.canvasTarget.getContext("2d", {alpha: false}),515,69,250,102),
+                    new ExtraGraphic(IMG_ASSETS_LIST.misc.star, this.canvasTarget.getContext("2d", {alpha: false}),655,372,48,48),
                 ]
             },
             lose: {
                 background: {
                     boardData: {
                         context: document.querySelector("#board_canvas").getContext("2d"),
-                        image: './Assets/Misc/board_high.webp',
+                        image: IMG_ASSETS_LIST.misc.board_high,
                         position: {
                             x: 371,
                             y: 70
@@ -1237,26 +1321,8 @@ class GameStatusRenderer extends Renderer{
                         height: 581
                     },
                     ropes: [
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 467,
-                                y: -218
-                            },
-                            width: 21,
-                            height: 317
-                        },
-                        {
-                            context: this.canvasTarget.getContext("2d"),
-                            image: './Assets/Misc/rope.webp',
-                            position: {
-                                x: 793,
-                                y: -218
-                            },
-                            width: 21,
-                            height: 317
-                        }
+                        new Rope(467,-218),
+                        new Rope(792,-218)
                     ]
                 },
                 textsData: [
@@ -1276,7 +1342,7 @@ class GameStatusRenderer extends Renderer{
                         },
                         width: 96,
                         height: 96,
-                        image: './Assets/Buttons/menu.webp',
+                        image: IMG_ASSETS_LIST.buttons.menu,
                     },
                     {
                         clickEventData: {
@@ -1291,7 +1357,7 @@ class GameStatusRenderer extends Renderer{
                         },
                         width: 96,
                         height: 96,
-                        image: './Assets/Buttons/resetLevel.webp',
+                        image: IMG_ASSETS_LIST.buttons.resetLevel,
                     },
                     {
                         clickEventData: {
@@ -1306,13 +1372,13 @@ class GameStatusRenderer extends Renderer{
                         },
                         width: 194,
                         height: 80,
-                        image: './Assets/Buttons/upgrade.webp'
+                        image: IMG_ASSETS_LIST.buttons.upgrade
                     },
                 ],
                 extraGraphics: [
-                    new ExtraGraphic("./Assets/Misc/lose_star.webp",this.canvasTarget.getContext("2d", {alpha: false}),515,181,250,138),
-                    new ExtraGraphic("./Assets/Misc/lose.webp",this.canvasTarget.getContext("2d", {alpha: false}),515,69,250,102),
-                    new ExtraGraphic("./Assets/Misc/Star.png",this.canvasTarget.getContext("2d", {alpha: false}),655,372,48,48),
+                    new ExtraGraphic(IMG_ASSETS_LIST.misc.lose_star,this.canvasTarget.getContext("2d", {alpha: false}),515,181,250,138),
+                    new ExtraGraphic(IMG_ASSETS_LIST.misc.lose,this.canvasTarget.getContext("2d", {alpha: false}),515,69,250,102),
+                    new ExtraGraphic(IMG_ASSETS_LIST.misc.star,this.canvasTarget.getContext("2d", {alpha: false}),655,372,48,48),
            
                 ]
             }

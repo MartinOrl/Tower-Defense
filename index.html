@@ -17,6 +17,7 @@
         <canvas id="tower_canvas" width="1280px" height="720px"></canvas>
         <canvas id="control_canvas" width="1280px" height="720px"></canvas>
         <canvas id="extra_graphics" width="1280px" height="720px"></canvas>
+        <canvas id="animations" width="1280px" height="720px"></canvas>
         <canvas id="level_text" width="1280px" height="720px"></canvas>
         <canvas id="text" width="1280px" height="720px"></canvas>
         <canvas id="ability_use" width="1280px" height="720px"></canvas>
@@ -24,6 +25,7 @@
         <div class="actions"></div>
         <div class="canvas_bg"></div>
     </div>
+   
     <div class="window_options">
         <p class="option option_active">Main Menu</p>
         <p class="option" >Settings</p>
@@ -34,6 +36,7 @@
         <p class="option" >Player LevelUp</p>
         <p class="option" >Game Win</p>
         <p class="option" >Game Over</p>
+        <p class="toggle" id="path-export">Export Path</p>
     </div>
 
     <script>
@@ -47,6 +50,9 @@
     
         })
     </script>
+    <script src="./utils.js"></script>
+    <script src="./config.js"></script>
+    <script src="./Models/Misc/graphicsPrefab.js"></script>
     <script src="./controller.js"></script>
     <script src="./view.js"></script>
     <script src="./main.js"></script>
