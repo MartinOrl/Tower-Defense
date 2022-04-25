@@ -125,6 +125,13 @@ class Renderer{
             }
         }
         this.eventManager = false
+        this.stateData;
+    }
+
+    getNotification(data){
+            
+        this.stateData = data
+        
     }
 
     setEventManager(manager){
@@ -705,7 +712,7 @@ class LevelDataRenderer extends Renderer{
                 new BasicText("Mana", "TitanOne", 16,56,234, document.querySelector("#level_text").getContext("2d")),
                 new BasicText("0", "TitanOne", 16,268,105, document.querySelector("#animations").getContext("2d")),
                 new BasicText("0", "TitanOne", 16,268,188, document.querySelector("#animations").getContext("2d")),
-                new BasicText("150", "TitanOne", 16,280,234, document.querySelector("#animations").getContext("2d"),"end"),
+                new BasicText("0", "TitanOne", 16,280,234, document.querySelector("#animations").getContext("2d"),"end"),
     
             ],
             extraGraphics: [
@@ -721,6 +728,7 @@ class LevelDataRenderer extends Renderer{
             ]
         }
         this.animationFrame;
+        
     }
 
     get getAnimationFrame(){
@@ -731,14 +739,12 @@ class LevelDataRenderer extends Renderer{
         this.animationFrame = cancelAnimationFrame(this.animationFrame)
     }
 
-    
-
     animate(coef, step){
         let flag = 0
         this.data.extraGraphics[3].width += step
         if(this.data.extraGraphics[3].width >= 240*coef){
             this.data.extraGraphics[3].width = 240*coef
-            this.data.textsData[5].text = this.parent.playerEventManager.state.maxMana
+            this.data.textsData[5].text = this.stateData.maxMana
             this.animationFrame = this.cancelAnimationFrame(this.animationFrame)
             flag = 1
             return
@@ -767,12 +773,12 @@ class LevelDataRenderer extends Renderer{
             this.cancelAnimationFrame()
             return
         }
-        if(this.parent.getMana <= this.parent.playerEventManager.state.maxMana){
-            this.data.textsData[5].text = this.parent.getMana.toFixed(0)
+        if(this.stateData.mana <= this.stateData.maxMana){
+            this.data.textsData[5].text = this.stateData.mana.toFixed(0)
 
         }
       
-        let coef = Number((this.parent.getMana / this.parent.playerEventManager.state.maxMana).toPrecision(4))
+        let coef = Number((this.stateData.mana / this.stateData.maxMana).toPrecision(4))
    
         let step = 1/10
 
@@ -935,6 +941,8 @@ class PlayerLevelUpRenderer extends Renderer{
     constructor(parent){
         super(parent)
         this.canvasTarget = document.querySelector("#control_canvas")
+ 
+        
         this.data = {
             background: {
                 boardData: {
@@ -981,7 +989,7 @@ class PlayerLevelUpRenderer extends Renderer{
                 {
                     clickEventData: {
                         action: ActionTypes.UPGRADE_PLAYER_SPEC,
-                        upgradeTarget: "bonusGold"
+                        upgradeTarget: "bonusCoins"
                     },
                     context: this.canvasTarget.getContext("2d", {alpha: false}),
                     image: IMG_ASSETS_LIST.misc.price,
@@ -1059,9 +1067,9 @@ class PlayerLevelUpRenderer extends Renderer{
             ],
             extraGraphics: [
                 new ExtraGraphic(IMG_ASSETS_LIST.misc.player,document.querySelector("#extra_graphics").getContext("2d", {alpha: false}), 336,189,187,227),
-                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,document.querySelector("#animations").getContext("2d", {alpha: false}), 611,250,240,14),
-                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue,document.querySelector("#animations").getContext("2d", {alpha: false}), 611,320,240,14),
-                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue,document.querySelector("#animations").getContext("2d", {alpha: false}), 611,390,240,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,document.querySelector("#animations").getContext("2d", {alpha: false}), 611,250,0,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue,document.querySelector("#animations").getContext("2d", {alpha: false}), 611,320,0,14),
+                new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue,document.querySelector("#animations").getContext("2d", {alpha: false}), 611,390,120,14),
                 new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow_opaque,this.canvasTarget.getContext("2d", {alpha: false}), 611,250,240,14),
                 new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue_opaque,this.canvasTarget.getContext("2d", {alpha: false}), 611,320,240,14),
                 new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_blue_opaque,this.canvasTarget.getContext("2d", {alpha: false}), 611,390,240,14),
@@ -1113,51 +1121,38 @@ class PlayerLevelUpRenderer extends Renderer{
     }
     
     renderUpdate(){
-        
+        console.log("UpgradeData:",this.stateData)
         let updateTarget = false;
         let step = false;
         let limit = false
 
-        
-
-        
-        let playerDataState = this.parent.eventManagers[1].state
-        let playerDataMax = this.parent.eventManagers[1].maxValues
-
-       
-
-        if(this.data.extraGraphics[1].width != 240 * (playerDataState.bonusGold/5)){
+        if(this.data.extraGraphics[1].width != 240 * (this.stateData.bonusCoins/5)){
             updateTarget = this.data.extraGraphics[1]
-            step = (240 * (playerDataState.bonusGold/5)) / 48
-            limit = (playerDataState.bonusGold/5)
+            step = (240 * (this.stateData.bonusCoins/5)) / 48
+            limit = (this.stateData.bonusCoins/5)
         }
-        if(this.data.extraGraphics[2].width != 240 * (playerDataState.bonusMana/5)){
+        if(this.data.extraGraphics[2].width != 240 * (this.stateData.bonusMana/5)){
             updateTarget = this.data.extraGraphics[2]
-            step = (240 * (playerDataState.bonusMana/5)) / 48
-            limit = (playerDataState.bonusMana/5)
+            step = (240 * (this.stateData.bonusMana/5)) / 48
+            limit = (this.stateData.bonusMana/5)
         }
-        if(this.data.extraGraphics[3].width != 240 * ((playerDataState.maxMana/playerDataMax.maxMana).toFixed(4))){
+        if(this.data.extraGraphics[3].width != 240 * ((this.stateData.maxMana/this.stateData.manaLimit).toFixed(4))){
             updateTarget = this.data.extraGraphics[3]
-            step = (240 * ((playerDataState.maxMana/playerDataMax.maxMana).toFixed(4))) / 48
-            limit = ((playerDataState.maxMana/playerDataMax.maxMana).toFixed(4))
+            step = (240 * ((this.stateData.maxMana/this.stateData.manaLimit).toFixed(4))) / 48
+            limit = ((this.stateData.maxMana/this.stateData.manaLimit).toFixed(4))
         }
 
         if(!updateTarget){
             return
         }
 
-        
-        
-        // this.data.extraGraphics[1].width = 240*(playerDataState.bonusGold/5)
-        // this.data.extraGraphics[2].width = 240*(playerDataState.bonusMana/5)
-        // this.data.extraGraphics[3].width = 240*((playerDataState.maxMana/playerDataMax.maxMana).toFixed(4))
-        
-        this.data.textsData[9].text = playerDataState.bonusGold
-        this.data.textsData[10].text = playerDataState.bonusMana
-        this.data.textsData[11].text = playerDataState.maxMana
+        console.log(this.stateData)
+
+        this.data.textsData[9].text = this.stateData.bonusCoins
+        this.data.textsData[10].text = this.stateData.bonusMana
+        this.data.textsData[11].text = this.stateData.maxMana
 
         clearCanvas(document.querySelector("#text"))
-        
        
         this.data.textsData.forEach(text => {
             createText(text)

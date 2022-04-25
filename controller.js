@@ -7,6 +7,12 @@ class GameManager{
         }
         this.abilityUseStatus = ''
         this.manaInterval;
+        this.data;
+    }
+
+    getNotification(data){
+        console.log("New data:",data)
+        this.data = data
     }
 
     registerRenderer(id,renderer){
@@ -19,15 +25,24 @@ class GameManager{
 
     manaUpdate(){
         this.manaInterval = setInterval(() => {
+            
+            let currentMana = this.data.mana
+            let maxMana = this.data.maxMana
 
-            if(this.gameCore.playerData.levelData.mana < this.gameCore.eventManagers[1].state.maxMana){
-                this.gameCore.playerData.levelData.mana += 1 + this.gameCore.eventManagers[1].state.bonusMana*0.1
+            if(currentMana < maxMana){
+            
+                this.gameCore.stateManagers.playerState.updateState({
+                    "mana": currentMana + 1 + this.data.bonusMana*0.1
+                })
                 this.gameCore.renderers.levelData.renderUpdate()
 
             }
-            if(this.gameCore.playerData.levelData.mana > this.gameCore.eventManagers[1].state.maxMana){
+            currentMana = this.data.mana
+            if(currentMana > maxMana){
 
-                this.gameCore.playerData.levelData.mana = this.gameCore.eventManagers[1].state.maxMana
+                this.gameCore.stateManagers.playerState.updateState({
+                    "mana": maxMana
+                })
                 this.gameCore.renderers.levelData.data.extraGraphics[3].width = 240
                 this.gameCore.renderers.levelData.renderUpdate()
 
@@ -67,7 +82,7 @@ class GameManager{
             this.abilityUseStatus = data.abilityTarget
             let context = document.querySelector("#ability_use").getContext("2d")
             if(this.abilityUseStatus != old){
-                if(this.gameCore.getMana >= data.manaCost){
+                if(this.data.mana >= data.manaCost){
 
                     onmousemove = function(e){
                         let box = document.querySelector("#ability_use").getBoundingClientRect()
@@ -96,13 +111,15 @@ class GameManager{
                     abilityElement.style.height = '720px'
                     abilityElement.style.zIndex = '120'
                     abilityElement.addEventListener("click", () => {
-                        if(this.gameCore.getMana >= data.manaCost){
+                        if(this.data.mana >= data.manaCost){
                             console.log("Ability used!")
                             if(document.querySelector(".ability-event")){
                                 document.querySelector(".ability-event").remove()
                             }
                            
-                            this.gameCore.setMana = this.gameCore.getMana - data.manaCost
+                            this.gameCore.stateManagers.playerState.updateState({
+                                "mana": this.data.mana - data.manaCost
+                            })
                             if(this.manaInterval == null){
                                 this.manaUpdate()
                             }
@@ -133,7 +150,7 @@ class GameManager{
                 if(data.stateChange == 'play'){
                     
                     if(data.playState == 'new_game'){
-                        this.gameCore.loadNewGameData()
+                        this.gameCore.stateManagers.playerState.stateReset()
                         clearCanvas(document.querySelector("#text"))
                         clearCanvas(document.querySelector("#board_canvas"))
                         clearCanvas(document.querySelector("#control_canvas"))
@@ -156,7 +173,7 @@ class GameManager{
                         })
                     }
                     else{
-                        this.gameCore.loadNewGameData()
+                        this.gameCore.stateManagers.playerState.stateReset()
                         clearCanvas(document.querySelector("#text"))
                         clearCanvas(document.querySelector("#board_canvas"))
                         clearCanvas(document.querySelector("#control_canvas"))
@@ -375,67 +392,21 @@ class GameManager{
             this.gameCore.renderers.menu.setAudioBarWidth(0.3)
         }
         else if(action == ActionTypes.UPGRADE_PLAYER_SPEC){
-            this.gameCore.eventManagers[1].levelUp(data.upgradeTarget)
+            console.log("Old:",this.data)
+
+            console.log("Target:",this.data[data.upgradeTarget], data.upgradeTarget)
+            if(data.upgradeTarget == "maxMana"){
+                this.data[data.upgradeTarget] += this.data[data.upgradeTarget] < this.data.manaLimit ? 10 : 0
+            }
+            else{
+                this.data[data.upgradeTarget] += this.data[data.upgradeTarget] < 5 ? 1 : 0
+            }
+            console.log("Upgrade:",this.data)
+            this.gameCore.stateManagers.playerState.updateState(this.data)
+            this.gameCore.renderers.playerLevelUp.renderUpdate()
         }
 
         console.groupEnd()
-        // if(action == ActionTypes.GAME_STATE_SET){
-
-        // }
-    }
-}
-
-class PlayerLevelManager{
-    constructor(parent){
-        this.parent = parent
-        this.state = {
-            bonusGold: 0,
-            bonusMana: 0,
-            maxMana: GAME_CONFIG.MAX_MANA
-
-        }
-        this.maxValues = {
-            bonusGold: 5,
-            bonusMana: 5,
-            maxMana: Number((GAME_CONFIG.MAX_MANA*2).toFixed(0))
-        }
-        
-      
-        this.parent.renderers.playerLevelUp.data.extraGraphics[1].width = 240*(this.state.bonusGold/5)
-        this.parent.renderers.playerLevelUp.data.extraGraphics[2].width = 240*(this.state.bonusMana/5)
-        this.parent.renderers.playerLevelUp.data.extraGraphics[3].width = 240*((this.state.maxMana/this.maxValues.maxMana).toFixed(4))
-
-       
-    }
-
-    reset(){
-        console.log("Reseting data state")
-        this.state = {
-            bonusGold: 0,
-            bonusMana: 0,
-            maxMana: GAME_CONFIG.MAX_MANA
-
-        }
-        this.maxValues = {
-            bonusGold: 5,
-            bonusMana: 5,
-            maxMana: Number((GAME_CONFIG.MAX_MANA*2).toFixed(0))
-        }
-        
-      
-        this.parent.renderers.playerLevelUp.data.extraGraphics[1].width = 240*(this.state.bonusGold/5)
-        this.parent.renderers.playerLevelUp.data.extraGraphics[2].width = 240*(this.state.bonusMana/5)
-        this.parent.renderers.playerLevelUp.data.extraGraphics[3].width = 240*((this.state.maxMana/this.maxValues.maxMana).toFixed(4))
-
-    }
-
   
-
-    levelUp(target){
-        if(Object.keys(this.state).includes(target)){
-            this.state[target] = this.state[target] == this.maxValues[target] ? this.maxValues[target] : target == 'maxMana' ? this.state[target]+= 10  : this.state[target]+= 1;
-            
-            this.parent.renderers.playerLevelUp.renderUpdate()
-        }
     }
 }

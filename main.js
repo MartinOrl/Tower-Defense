@@ -16,15 +16,12 @@ window.addEventListener("load", () => {
                 
             }
             this.assets = IMG_ASSETS_LIST
-     
-            this.playerData = {
-                stars: 0,
-                savedData: localStorage.getItem("save"),
-                levelData: {
-                    coins: GAME_CONFIG.INITIAL_COINS,
-                    mana: GAME_CONFIG.INITIAL_MANA
-                }
+
+            this.stateManagers = {
+                playerState: new PlayerStateManager()
             }
+     
+         
 
             this.renderers = {
                 menu: new MenuRenderer(this),
@@ -37,8 +34,13 @@ window.addEventListener("load", () => {
 
             this.eventManagers = [
                 new GameManager(this),
-                new PlayerLevelManager(this)
+       
             ]
+
+            this.stateManagers.playerState.createObserver("game",this.eventManagers[0],["mana","maxMana","bonusMana","bonusCoins","manaLimit"])
+            this.stateManagers.playerState.createObserver("levelData",this.renderers.levelData,["mana","maxMana"])  
+            this.stateManagers.playerState.createObserver("playerUpgrade",this.renderers.playerLevelUp,["maxMana","bonusMana","bonusCoins","manaLimit"])  
+            
 
 
             this.renderers.menu.setEventManager(this.eventManagers[0])
@@ -68,37 +70,6 @@ window.addEventListener("load", () => {
 
         }
 
-        loadNewGameData(){
-            console.log("Reseting")
-            this.playerData = {
-                stars: 0,
-                savedData: localStorage.getItem("save"),
-                levelData: {
-                    coins: GAME_CONFIG.INITIAL_COINS,
-                    mana: GAME_CONFIG.INITIAL_MANA
-                }
-            }
-            this.eventManagers[1].reset()
-        }
-
-        get getMana(){
-            return this.playerData.levelData.mana
-        }
-
-        get getCoins(){
-            return this.playerData.levelData.coins
-        }
-
-        get playerEventManager(){
-            return this.eventManagers[1]
-        }
-
-        set setMana(mana){
-            let flag = this.getMana == this.eventManagers[1].state.maxMana
-            
-            this.playerData.levelData.mana = mana
-            flag ? this.renderers.levelData.renderUpdate() : ""
-        }
 
         setGameMode(mode){
     
