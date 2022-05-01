@@ -34,6 +34,17 @@ class PlayerStateManager extends StateManager{
         }
     }
 
+    notifyObserver(observer){
+        if(observer){
+            let data = {
+            }
+            this.observers[observer][1].forEach(tmp => {
+                data[tmp] = this.state[tmp]
+            })
+            this.observers[observer][0].getNotification(data)
+        }
+    }
+
     stateReset(){
 
         console.warn("RESETING PLAYER DATA STATE")
@@ -45,23 +56,17 @@ class PlayerStateManager extends StateManager{
             bonusCoins: 0,
             bonusMana: 0,
             maxMana: 100,
+            manaLimit: 200,
             coins: 0,
             mana: 0
            
         }
+        Object.keys(this.observers).forEach(observer => {
+            this.notifyObserver(observer)
+        })
 
     }
-
-    notifyObserver(observer){
-        if(observer){
-            let data = {
-            }
-            this.observers[observer][1].forEach(tmp => {
-                data[tmp] = this.state[tmp]
-            })
-            this.observers[observer][0].getNotification(data)
-        }
-    }
+    
 
     createObserver(observerName, observer, dataTargets){
         if(Object.keys(this.observers).includes(observerName)){

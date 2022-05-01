@@ -161,7 +161,7 @@ class GameManager{
                     
                         this.renderers.instructions.render()
                         this.renderers.instructions.createHTML()
-                        this.gameCore.setGameMode('pause')
+                        this.gameCore.setGameMode('play')
     
                         setGameBackgroundAlpha(1)
     
@@ -202,7 +202,7 @@ class GameManager{
                 else if(data.stateChange == 'pause'){
                     clearCanvas(document.querySelector("#extra_graphics"))
                     this.renderers.menu.setActiveMenuWindow("menu")
-                    this.gameCore.setGameMode('pause')
+                    this.gameCore.setGameMode('paused')
                     clearInterval(this.manaInterval)
                     this.gameCore.renderers.levelData.renderUpdate(true)
 
@@ -226,6 +226,7 @@ class GameManager{
                     clearCanvas(document.querySelector("#level_text"))
                     this.renderers.levelData.render()
                     this.renderers.levelData.createHTML()
+                    this.gameCore.setGameMode("play")
                     this.manaUpdate()
                     setGameBackgroundAlpha(0)
 
@@ -323,6 +324,10 @@ class GameManager{
                     this.renderers.instructions.render()
                     this.renderers.instructions.createHTML()
                 }
+                else if(data.stateChange == 'advance'){
+                    this.gameCore.state.currentLevel += 1
+                    this.gameCore.setGameMode("play")
+                }
         
             }
         }
@@ -392,6 +397,7 @@ class GameManager{
             this.gameCore.renderers.menu.setAudioBarWidth(0.3)
         }
         else if(action == ActionTypes.UPGRADE_PLAYER_SPEC){
+            console.log(data.upgradeTarget)
             console.log("Old:",this.data)
 
             console.log("Target:",this.data[data.upgradeTarget], data.upgradeTarget)
