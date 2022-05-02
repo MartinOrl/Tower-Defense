@@ -88,17 +88,43 @@ const IMG_ASSETS_LIST = {
 
 }
 
-
 const LAYERS = {
-    layer1: "",  //used for level background
-    layer2: "",  //used for levelStationary graphics
-    layer3: "",  //used for stationary level text
-    layer4: "",  //used for levelData Animated graphics
-    layer5: "",  //used for abilities show and use animation
-    layer6: "",  //used for shadiws
-    layer7: "",  //used for boards
-    layer8: "",  //used for control buttons
-    layer9: "",  //used for stationary graphics in menu
-    layer10: "",  //used for animatory graphics in menu
-    layer11: ""
+    layer1: "levelBoard",
+    layer2: "enemies",  
+    layer3: "towers", 
+    layer4: "levelDataBoard", 
+    layer5: "levelDataStationary",  
+    layer6: "levelDataAnimations", 
+    layer7: "levelControls", 
+    layer8: "masterControlBoard",  
+    layer9: "masterExtraGraphics",  
+    layer10: "masterExtraText",  
+    layer11: "masterControls"
+}
+
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x+r, y);
+    this.arcTo(x+w, y,   x+w, y+h, r);
+    this.arcTo(x+w, y+h, x,   y+h, r);
+    this.arcTo(x,   y+h, x,   y,   r);
+    this.arcTo(x,   y,   x+w, y,   r);
+    this.closePath();
+    return this;
+}
+
+CanvasRenderingContext2D.prototype.borderThick = function (x, y, w, h, r,th) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.lineWidth = th;
+    this.moveTo(x+r, y);
+    this.arcTo(x+w, y,   x+w, y+h, r);
+    this.arcTo(x+w, y+h, x,   y+h, r);
+    this.arcTo(x,   y+h, x,   y,   r);
+    this.arcTo(x,   y,   x+w, y,   r);
+    this.closePath();
+    return this;
 }

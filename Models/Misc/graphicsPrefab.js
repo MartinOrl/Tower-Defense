@@ -1,7 +1,7 @@
 class Text{
-    constructor(text,font, fontSize, x, y,align,ctx){
+    constructor(text,font, fontSize, x, y,align){
         this.text = text;
-        this.context = ctx ? ctx : document.querySelector("#text").getContext("2d");
+   
         this.position = {
             x,y
         }
@@ -12,8 +12,8 @@ class Text{
 }
 
 class HeadingText extends Text{
-    constructor(text,font, fontSize, x,y,ctx=false, align="start"){
-        super(text,font, fontSize, x,y,align,ctx)
+    constructor(text,font, fontSize, x,y,align="start"){
+        super(text,font, fontSize, x,y,align)
         
         this.gradientData = {
             angles: [0,180,0,0],
@@ -33,8 +33,8 @@ class HeadingText extends Text{
 }
 
 class BasicText extends Text{
-    constructor(text,font, fontSize, x,y,ctx=false,align="start"){
-        super(text,font, fontSize, x,y,align,ctx)
+    constructor(text,font, fontSize, x,y,align="start"){
+        super(text,font, fontSize, x,y,align)
         this.fill = '#fff'
     }
 }
@@ -53,8 +53,7 @@ class ExtraGraphic{
 }
 
 class ExtraBoard{
-    constructor(ctx, x,y,w,h,fill=false){
-        this.context = ctx
+    constructor(x,y,w,h,fill=false){
         this.position = {
             x,y
         }
@@ -66,8 +65,7 @@ class ExtraBoard{
 
 class Rope{
     constructor(x,y){
-        this.context = document.querySelector("#control_canvas").getContext("2d")
-        this.image = './Assets/Misc/rope.webp'
+        this.image = IMG_ASSETS_LIST.misc.rope.image
         this.position = {
             x,y
         }

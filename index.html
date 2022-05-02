@@ -11,19 +11,22 @@
 </head>
 <body>
     <div class="canvas-container">
-        <canvas id="board_canvas" width="1280px" height="720px"></canvas>
-        <canvas id="level_canvas" width="1280px" height="720px"></canvas>
-        <canvas id="enemies_canvas" width="1280px" height="720px"></canvas>
-        <canvas id="tower_canvas" width="1280px" height="720px"></canvas>
-        <canvas id="control_canvas" width="1280px" height="720px"></canvas>
-        <canvas id="extra_graphics" width="1280px" height="720px"></canvas>
-        <canvas id="animations" width="1280px" height="720px"></canvas>
-        <canvas id="level_text" width="1280px" height="720px"></canvas>
-        <canvas id="text" width="1280px" height="720px"></canvas>
-        <canvas id="ability_use" width="1280px" height="720px"></canvas>
+        
+        <canvas id="levelBoard" width="1280px" height="720px"></canvas>
+        <canvas id="enemies" width="1280px" height="720px"></canvas>
+        <canvas id="towers" width="1280px" height="720px"></canvas>
+        <canvas id="levelDataBoard" width="1280px" height="720px"></canvas>
+        <canvas id="levelDataStationary" width="1280px" height="720px"></canvas>
+        <canvas id="levelDataAnimations" width="1280px" height="720px"></canvas>
+        <canvas id="levelControls" width="1280px" height="720px"></canvas>
+        <canvas id="masterControlBoard" width="1280px" height="720px"></canvas>
+        <canvas id="masterExtraGraphics" width="1280px" height="720px"></canvas>
+        <canvas id="masterExtraText" width="1280px" height="720px"></canvas>
+        <canvas id="masterControls" width="1280px" height="720px"></canvas>
         <div class="shadow"></div>
         <div class="actions"></div>
-        <div class="canvas_bg"></div>
+        <div class="level"></div>
+        
     </div>
    
     <div class="window_options">
@@ -50,10 +53,19 @@
     
         })
     </script>
-    <script src="./stateManager.js"></script>
-    <script src="./utils.js"></script>
-    <script src="./config.js"></script>
+
+    <script src="./Config/config.js"></script>
     <script src="./Models/Misc/graphicsPrefab.js"></script>
+
+    <script src="./utils.js"></script>
+    
+    <script src="./Config/data.js"></script>
+
+    <script src="./Engine/stateManager.js"></script>
+    <script src="./Engine//rendering.js"></script>
+    <script src="./Engine/engine.js"></script>
+    
+    
     <script src="./controller.js"></script>
     <script src="./view.js"></script>
     <script src="./main.js"></script>

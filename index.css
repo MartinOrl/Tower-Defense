@@ -47,19 +47,50 @@ canvas{
     width: 100%;
     height: 100%;
 }
-#animations{
-    z-index: 36;
-}
-#extra_graphics{
-    z-index: 35;
-}
-#level_text{
-    z-index: 12;
-}
-#text{
-    z-index: 40;
+
+#levelBoard{
+    z-index: 1;
 }
 
+#enemies{
+    z-index: 2;
+}
+
+#towers{
+    z-index: 3;
+}
+
+#levelDataBoard{
+    z-index: 4;
+}
+
+#levelDataStationary{
+    z-index: 5;
+}
+
+#levelDataAnimations{
+    z-index: 6;
+}
+
+#levelControls{
+    z-index: 7;
+}
+
+#masterControlBoard{
+    z-index: 9;
+}
+
+#masterExtraGraphics{
+    z-index: 10;
+}
+
+#masterExtraText{
+    z-index: 11;
+}
+
+#masterControls{
+    z-index: 12;
+}
 
 
 .actions span{
@@ -71,9 +102,9 @@ canvas{
     z-index: 140;
 }
 
-.canvas_bg{
+.level{
     position: absolute;
-    z-index: 1;
+    z-index: 0;
     width: 100%;
     height: 100%;
     display: block;
@@ -81,7 +112,7 @@ canvas{
 
 .shadow{
     position: absolute;
-    z-index: -1;
+    z-index: 8;
     width: 100%;
     height: 100%;
     display: block;
