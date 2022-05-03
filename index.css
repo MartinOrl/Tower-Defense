@@ -118,7 +118,11 @@ canvas{
     display: block;
     opacity: 0;
     background: rgba(0,0,0,.4);
-    transition: 300ms ease-in-out;
+    transition: 200ms ease-in-out;
+}
+
+.shadow-show{
+    opacity: 1;
 }
 
 .window_options{

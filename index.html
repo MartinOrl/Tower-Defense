@@ -29,17 +29,18 @@
         
     </div>
    
+    <div class="state">
+        <p>Window: <span id="currentGameWindow"></span></p>
+        <p>Status: <span id="currentGameStatus"></span></p>
+        <p>GameLevel: <span id="currentGameLevel"></span></p>
+        <p>C_Level: <span id="characterLevel"></span></p>
+        <p>Mana: <span id="mana"></span></p>
+    </div>
+
     <div class="window_options">
-        <p class="option option_active">Main Menu</p>
-        <p class="option" >Settings</p>
-        <p class="option" >Instructions</p>
-        <p class="option" >Level</p>
-        <p class="option" >Menu</p>
-        <p class="option" >Tower LevelUp</p>
-        <p class="option" >Player LevelUp</p>
-        <p class="option" >Game Win</p>
-        <p class="option" >Game Over</p>
-        <p class="toggle" id="path-export">Export Path</p>
+        <p class="option option_active">Cursor</p>
+        <p class="option">X: <span id="cur_x"></span></p>
+        <p class="option">Y: <span id="cur_y"></span></p>
     </div>
 
     <script>
@@ -60,14 +61,24 @@
     <script src="./utils.js"></script>
     
     <script src="./Config/data.js"></script>
-
+    <script src="./Engine/managers.js"></script>
     <script src="./Engine/stateManager.js"></script>
     <script src="./Engine//rendering.js"></script>
     <script src="./Engine/engine.js"></script>
     
+    <script>
+        var example = document.querySelector("#masterControls"); 
+        example.onmousemove = function(e) { 
+            let rect = example.getBoundingClientRect()
+            var x = e.pageX - rect.left
+            var y = e.pageY - rect.top
+            document.querySelector("#cur_x").innerHTML = x.toFixed(0)
+            document.querySelector("#cur_y").innerHTML = y.toFixed(0)
+        }
+    </script>
     
-    <script src="./controller.js"></script>
-    <script src="./view.js"></script>
+    <!-- <script src="./controller.js"></script>
+    <script src="./view.js"></script> -->
     <script src="./main.js"></script>
 </body>
 </html>

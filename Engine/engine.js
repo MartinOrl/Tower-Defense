@@ -1,110 +1,94 @@
-class ClickEventManager{
+
+class MainGameLoop{
     constructor(){
 
-    }
+        this.refs = {
 
-    fireEvent(event){
-        //* STRUCTURE  */
-        //?
-        //?  @action - specifies action from config
-        //?  @target - specifies target
-        //?  @change - specifies change
-        //?
-        //?
-        //****************************/ 
-
-        if(event.action == ActionTypes.GAME_STATE_SET){
-            
         }
-       
-    }
-}
 
-class LevelManager{
-    constructor(){
+        this.renderers = {
 
-    }
-}
-
-
-
-
-class MasterManager{
-    //********************************************************* */
-
-    //? Handles menu window change requests and if to start or pause a game
-
-    //********************************************************* */
-    constructor(){
-        this.stateManagerRef;
-    }
-
-    setStateManager(manager){
-        this.stateManagerRef = manager
-    }
-
-    handleEvent(eventData){
-        
-        if(this.stateManagerRef){
-            if(eventData.stateTarget == 'game_state'){
-                if(["play","pause","unpause"].includes(eventData.stateChange)){
-                    this.stateManagerRef.updateState({
-                        currentGameStatus: eventData.stateChange == 'unpause' ? 'play' : eventData.stateChange
-                    })
-                }
-                else{
-                    this.stateManagerRef.updateState({
-                        currentGameWindow: eventData.stateChange
-                    })
-                }
-            }
         }
-    }
-}
+        this.animationRenderer = {
 
-class AudioManager{
-    constructor(){
-        this.audioPlayer = new Audio("./Assets/Music/background.wav")
-
-        this.oldVolume = localStorage.getItem("audio-cfg") != null ? localStorage.getItem("audio-cfg") : 0.3;
-        this.volume = localStorage.getItem("audio-cfg") != null ? localStorage.getItem("audio-cfg") : 0.3;
-
-        //? Basic configuration
-        this.audioPlayer.muted = false
-        this.audioPlayer.loop = true
-        this.audioPlayer.addEventListener = true
-
-        this.audioPlayer.pause()
-
-        this.observers = [];
-
-    }
-
-    registerObserver(observer){
-        this.observers.push(observer)
-    }
-
-    notifyObservers(){
-        this.observers.forEach(observer => {
-            observer.notify(this.volume)
-        })
-    }
-
-    modifyVolume(newVolume){
-        if(newVolume != this.volume){
-            this.oldVolume = this.volume
-            this.audioPlayer.volume = this.volume
-            this.notifyObservers()
         }
+
+        this.status = 0; //0 - paused   1 - running   2 - main
+    }
+
+    registerRef(ref){
+        this.refs[ref.type] = ref.target
     }
 
     getNotification(data){
-        this.modifyVolume(data.volume)
+        if(data.currentGameStatus == 'pause' ){
+            this.status = 0;
+            this.stop();
+        }
+        else if(data.currentGameStatus == 'main'){
+            this.status = 2;
+            this.stop();
+        }
+        else{
+            this.status = 1;
+            this.initialize()
+        }
+        
     }
 
-    
+    linkRenderers(renderers){
+        Object.keys(renderers).forEach(key =>{
+            if(renderers[key].rendererType == 'animations'){
+                this.animationRenderer[key] = renderers[key]
+            }
+            else{
+                this.renderers[key] = renderers[key]
+            }
+        })
+    }
 
- 
+    linkAnimationRenderer(renderer){
+        this.animationRenderer[renderer.type] = renderer.target
+    }
+
+    initializeAnimationLoop(target){
+        this.renderers[target].initialize()
+    }
+
+    clear(){
+        Object.values(this.renderers).forEach(renderer => {
+            renderer.clearCanvas()
+        })
+        Object.values(this.animationRenderer).forEach(renderer => {
+            renderer.clearCanvas()
+          
+        })
+    }
+
+    stop(){
+        Object.values(this.animationRenderer).forEach(renderer => {
+            renderer.haltAnimation();
+        })
+    }
+
+    initialize(){
+        this.refs['stateManager'].updateState({
+            mana: 0,
+            coins: 0
+        })
+        Object.values(this.renderers).forEach(renderer => {
+            renderer.render()
+        })
+        Object.values(this.animationRenderer).forEach(renderer => {
+            renderer.render()
+        })
+        
+    }
+
+
+
+
+
 }
 
 
@@ -123,11 +107,34 @@ class Engine{
         //? Audio Managers
         this.audioManager = new AudioManager()
 
+        //? Event Managers and linking state manager to them
+        this.clickEventHandler = new ClickEventManager()
+
+        //? Game Loops
+        this.mainLoop = new MainGameLoop();
+
         //? Rendering Engine
         this.renderingEngine = new RenderingEngine()
+        this.renderingEngine.registerEventManager({
+            type: "click",
+            manager: this.clickEventHandler
+        })
 
+        //? Linking
+        this.renderingEngine.renderers.level.dataAnimations.linkStateManager(this.stateManager)
+        this.renderingEngine.linkMainLoop(this.mainLoop)
+        this.clickEventHandler.linkStateManager(this.stateManager)
+        this.mainLoop.linkRenderers(this.renderingEngine.renderers.level)
+        this.mainLoop.registerRef({
+            type: 'stateManager',
+            target: this.stateManager
+        })
+
+
+        //? OBserver Creation
         this.stateManager.createObserver("audio", this.audioManager, ["volume"])
         this.stateManager.createObserver("renderEngine", this.renderingEngine, ["currentGameWindow","currentGameStatus","currentGameLevel"])
+        this.stateManager.createObserver("gameLoop", this.mainLoop, ["currentGameStatus"])
 
         // this.stateManager.bootNotification()
 

@@ -40,9 +40,8 @@ class BasicText extends Text{
 }
 
 class ExtraGraphic{
-    constructor(url,ctx,x,y,w,h){
+    constructor(url,x,y,w,h){
         this.image = url
-        this.context = ctx
         this.position = {
             x,y
         }
@@ -65,7 +64,7 @@ class ExtraBoard{
 
 class Rope{
     constructor(x,y){
-        this.image = IMG_ASSETS_LIST.misc.rope.image
+        this.image = IMG_ASSETS_LIST.misc.rope
         this.position = {
             x,y
         }

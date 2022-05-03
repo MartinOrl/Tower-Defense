@@ -102,6 +102,28 @@ const LAYERS = {
     layer11: "masterControls"
 }
 
+
+const TOWER_PLACE_POSITIONS = {
+    level_1: [
+        {
+            x: 200,
+            y: 600
+        },
+        {
+            x: 548,
+            y: 485
+        },
+        {
+            x: 842,
+            y: 512
+        },
+        {
+            x: 1104,
+            y: 300
+        },
+    ]
+}
+
 CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
     if (w < 2 * r) r = w / 2;
     if (h < 2 * r) r = h / 2;

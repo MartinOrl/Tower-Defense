@@ -19,7 +19,7 @@ class PlayerStateManager extends StateManager{
 
         this.state = {
             currentGameWindow: "main",
-            currentGameStatus: 'paused',
+            currentGameStatus: 'pause',
             currentGameLevel: 1,
             characterLevel: 1,
             xp_points: 0,
@@ -37,6 +37,14 @@ class PlayerStateManager extends StateManager{
         }
 
         this.logging = true
+
+        Object.keys(this.state).forEach(stateKey => {
+            if(document.querySelector(`#${stateKey}`)){
+                document.querySelector(`#${stateKey}`).innerHTML = this.state[stateKey]
+            }
+        })
+
+        console.log(this.state)
     }
 
     saveStateToMemory(){
@@ -67,6 +75,7 @@ class PlayerStateManager extends StateManager{
             this.observers[observer][1].forEach(tmp => {
                 data[tmp] = this.state[tmp]
             })
+         
             this.observers[observer][0].getNotification(data)
         }
     }
@@ -84,7 +93,7 @@ class PlayerStateManager extends StateManager{
 
         this.state = {
             currentGameWindow: "main",
-            currentGameStatus: 'paused',
+            currentGameStatus: 'pause',
             currentGameLevel: 1,
             characterLevel: 1,
             xp_points: 0,
@@ -98,11 +107,24 @@ class PlayerStateManager extends StateManager{
            
         }
 
+        this.manaInterval;
+
         Object.keys(this.observers).forEach(observer => {
             this.notifyObserver(observer)
         })
 
     }
+
+    startManaUpdate(){
+        this.manaInterval = setInterval(() => {
+            if(this.getMana < this.state.maxMana){
+                this.updateState({
+                    mana: this.getMana + 1 + this.state.bonusMana*0.5
+                })
+            }
+        }, 1000);
+    }
+    
     
 
     createObserver(observerName, observer, dataTargets){
@@ -118,10 +140,20 @@ class PlayerStateManager extends StateManager{
     updateState(val){
         console.groupCollapsed("playerStateChange |  Modifying state")
         console.log("previous state", this.state)
+        console.log(val)
+
         let flag = 0;
         Object.keys(val).forEach(key => {
             if(this.state[key] != val[key] || !Object.keys(this.state).includes(key)){
                 this.state[key] = val[key]
+                if((key == 'currentGameStatus' && val[key] == 'play') || (key == 'currentGameStatus' && val[key] == 'resume')){
+                    this.startManaUpdate()
+                }
+                else if(key == 'currentGameStatus' && val[key] == 'pause'){
+                    console.log("Pausing interval")
+                    clearInterval(this.manaInterval)
+                }
+               
                 flag = 1
             }
             
@@ -143,7 +175,17 @@ class PlayerStateManager extends StateManager{
         }
         console.log("new state", this.state)
         console.groupEnd()
-        
+
+
+        Object.keys(this.state).forEach(stateKey => {
+            if(document.querySelector(`#${stateKey}`)){
+                document.querySelector(`#${stateKey}`).innerHTML = this.state[stateKey]
+            }
+        })
+    }
+
+    get getGameStatus(){
+        return this.state.currentGameStatus
     }
 
     get getGameLevel(){
@@ -180,6 +222,14 @@ class PlayerStateManager extends StateManager{
 
     get getMana(){
         return this.state.mana
+    }
+
+    get getMaxMana(){
+        return this.state.maxMana
+    }
+
+    get getBonusMana(){
+        return this.state.bonusMana
     }
 
 
