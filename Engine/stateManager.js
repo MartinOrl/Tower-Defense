@@ -3,6 +3,10 @@ class StateManager{
         this.state = {
   
         }
+
+        this.observers = {
+
+        }
     }
 
     setState(object){
@@ -10,6 +14,132 @@ class StateManager{
             ...object
         }
     }
+
+    createObserver(observerName, observer, dataTargets){
+        
+        if(Object.keys(this.observers).includes(observerName)){
+            return
+        }
+        this.logInfo(`Observer added: ${observerName}`)
+        this.observers[observerName] = [observer, [...dataTargets]]
+        this.notifyObserver(observerName)
+    }
+
+    notifyObserver(observer){
+        if(observer){
+            let data = {
+            }
+            this.observers[observer][1].forEach(tmp => {
+                data[tmp] = this.state[tmp]
+            })
+         
+            this.observers[observer][0].getNotification(data)
+        }
+    }
+
+    rendererNotify(observer, formattedData){
+        this.observers[observer][0].getNotification(formattedData)
+    }
+
+    createObserver(observerName, observer, dataTargets){
+        
+        if(Object.keys(this.observers).includes(observerName)){
+            return
+        }
+        this.logInfo(`Observer added: ${observerName}`)
+        this.observers[observerName] = [observer, [...dataTargets]]
+        this.notifyObserver(observerName)
+    }
+
+    
+}
+
+class TowersStateManager extends StateManager{
+    constructor(){
+        super()
+        this.state = {
+            towers: [
+                
+            ]
+        }
+    }
+
+    logInfo(info,type=""){
+        if(this.logging){
+            if(type == 'warn'){
+                console.warn("[TOWER_STATE_MANAGER]:",info)
+                return
+            }
+            console.log("[TOWER_STATE_MANAGER]:",info)
+            return
+        }
+    }
+
+    createTower(towerData){
+        console.groupCollapsed("towerStateChange |  Modifying state")
+        console.log("previous state", this.state)
+        this.state.towers.push(towerData)
+        
+
+        Object.keys(this.observers).forEach(observer => {
+            let initialData = []
+
+            this.state.towers.forEach(tower => {
+                initialData.push(tower.dataForRenderer)
+            })
+            this.rendererNotify(observer,{
+                type: 'image',
+                data: initialData
+            })
+        })
+        console.log("next state", this.state)
+        console.groupEnd()
+        
+    
+    }
+    reset(){
+        this.state.towers = []
+        Object.keys(this.observers).forEach(observer => {
+            let initialData = []
+            this.rendererNotify(observer,{
+                type: 'image',
+                data: initialData
+            })
+        })
+    }
+
+    // updateState(val){
+    //     console.groupCollapsed("towerStateChange |  Modifying state")
+    //     console.log("previous state", this.state)
+    //     console.log(val)
+
+    //     let flag = 0;
+    //     Object.keys(val).forEach(key => {
+    //         if(this.state[key] != val[key] || !Object.keys(this.state).includes(key)){
+    //             this.state[key] = val[key]
+    //             flag = 1
+    //         }
+            
+    //     })
+    //     if(flag){
+            
+    //         Object.keys(this.observers).forEach(observer => {
+    //             let match = 0;
+    //             Object.keys(val).forEach(key => {
+    //                 if(this.observers[observer][1].includes(key)){
+    //                     match = 1
+    //                 }
+    //             })
+    //             if(match){
+    //                 this.notifyObserver(observer)
+    //             }
+                
+    //         })
+    //     }
+    //     console.log("new state", this.state)
+    //     console.groupEnd()
+        
+    // }
 }
 
 
@@ -32,10 +162,7 @@ class PlayerStateManager extends StateManager{
             volume: 0
             
         }
-        this.observers = {
-            
-        }
-
+   
         this.logging = true
 
         Object.keys(this.state).forEach(stateKey => {
@@ -54,6 +181,8 @@ class PlayerStateManager extends StateManager{
         localStorage.setItem("save", data)
     }
 
+
+
     logInfo(info,type=""){
         if(this.logging){
             if(type == 'warn'){
@@ -68,17 +197,7 @@ class PlayerStateManager extends StateManager{
     
 
 
-    notifyObserver(observer){
-        if(observer){
-            let data = {
-            }
-            this.observers[observer][1].forEach(tmp => {
-                data[tmp] = this.state[tmp]
-            })
-         
-            this.observers[observer][0].getNotification(data)
-        }
-    }
+    
 
     // bootNotification(){
     //     Object.keys(this.observers).forEach(observerKey => {
@@ -127,15 +246,7 @@ class PlayerStateManager extends StateManager{
     
     
 
-    createObserver(observerName, observer, dataTargets){
-        
-        if(Object.keys(this.observers).includes(observerName)){
-            return
-        }
-        this.logInfo(`Observer added: ${observerName}`)
-        this.observers[observerName] = [observer, [...dataTargets]]
-        this.notifyObserver(observerName)
-    }
+    
 
     updateState(val){
         console.groupCollapsed("playerStateChange |  Modifying state")

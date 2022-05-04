@@ -104,7 +104,6 @@ class AnimationsRenderer extends Renderer{
         this.data = data
         this.animationFrame;
         this.animationStatus = 0;
-        this.mana = 0;
         this.stateManager;
         this.animationData = {
             step: 0,
@@ -124,33 +123,9 @@ class AnimationsRenderer extends Renderer{
 
     animate(){
 
-        let manaDiff = this.stateManager.getMana - this.mana;
-        this.mana = this.stateManager.getMana
+        this.data.texts.data[2].text = this.stateManager.getMana
 
-        let manaPerSecond = 1 + this.stateManager.getBonusMana*0.5
-
-        let timeToMax = this.stateManager.getMaxMana / manaPerSecond
-
-        if(manaDiff > 10){
-
-            this.animationData.step = manaPerSecond / 16.667;
-            this.animationData.width = 240 * (this.stateManager.getMaxMana / this.stateManager.getMana)
-        }
-        else{
-     
-            this.animationData.step = (240 / timeToMax) / 20;
-           
-            this.animationData.width += this.animationData.step;
-            if(this.animationData.width > 240){
-                this.animationData.width = 240
-            }
-            
-        }
-        console.log(this.animationData)
-
-        this.data.texts.data[2].text = this.mana
-
-        this.data.bars.data[0].width = this.animationData.width
+        this.data.bars.data[0].width = 240 * (this.stateManager.getMana / this.stateManager.getMaxMana)
 
 
         this.clearCanvas()
@@ -171,7 +146,7 @@ class AnimationsRenderer extends Renderer{
         if(this.animationStatus){
             setTimeout(() => {
                 this.animationFrame = requestAnimationFrame(this.animate.bind(this))
-            }, 50);
+            }, 1000);
         }
    
 
@@ -180,14 +155,6 @@ class AnimationsRenderer extends Renderer{
     render(){
         this.clearCanvas()
         this.animationStatus = 1;
-        
-        this.animationData = {
-            step: 0,
-            width: 0
-        }
-        this.mana = 0;
-        this.data.texts.data[2].text = 0
-        this.data.bars.data[0].width = 0
 
         Object.keys(this.data).forEach(dataKey => {
            
@@ -238,6 +205,7 @@ class SubRenderer extends Renderer{
     getNotification(data){
         this.data = data.data
         this.type = data.type
+        console.log(data)
         this.render()
     }
 

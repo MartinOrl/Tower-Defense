@@ -43,8 +43,65 @@ class ClickEventManager{
 
 class LevelManager{
     constructor(){
+        this.towersPositions = []
+        
+        this.basicProperties = {
+            width: 60,
+            height: 35
+        }
+
+        this.activePositions = []
+        this.level;
+        this.towersManager;
+    }
+
+    linkTowerManager(manager){
+        this.towersManager = manager
+    }
+
+    setPositions(level){
+        this.towersPositions = TOWER_PLACE_POSITIONS[`level_${level}`]
 
     }
+
+    getNotification(data){
+        this.setPositions(data.currentGameLevel);
+    }
+
+    resetPositions(){
+        this.activePositions = []
+    }
+
+    createHTML(){
+
+        console.log("Creating tower html")
+        let target = document.querySelector(".actions")
+
+        this.towersPositions.forEach(position => {
+
+            let {x,y} = position
+            let newHTMLElement = document.createElement("span")
+            newHTMLElement.style.left = `${x - this.basicProperties.width}px`;
+            newHTMLElement.style.top = `${y - this.basicProperties.height}px`;
+            newHTMLElement.style.width = `${this.basicProperties.width*2}px`;
+            newHTMLElement.style.height = `${this.basicProperties.height*2}px`;
+            newHTMLElement.addEventListener("click", () => {
+                if(this.activePositions.includes(position) ){
+
+                }
+                else{
+                    this.activePositions.push(position)
+                    this.towersManager.createTower(new ArcherTower(x,y))
+                }
+                
+                
+            })
+            target.appendChild(newHTMLElement)
+        })
+
+    
+    }
+
 }
 
 

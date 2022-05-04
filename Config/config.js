@@ -84,6 +84,13 @@ const IMG_ASSETS_LIST = {
         star: new IMG_ASSET("./Assets/Misc/Star.png"),
         win_star: new IMG_ASSET("./Assets/Misc/win_star.webp"),
         win: new IMG_ASSET("./Assets/Misc/win.webp")
+    },
+    towers: {
+        archer: {
+            level_1: new IMG_ASSET("./Assets/Towers/Archer_1.webp"),
+            level_2: new IMG_ASSET("./Assets/Towers/Archer_2.webp"),
+            level_3: new IMG_ASSET("./Assets/Towers/Archer_3.webp"),
+        }
     }
 
 }
@@ -101,7 +108,6 @@ const LAYERS = {
     layer10: "masterExtraText",  
     layer11: "masterControls"
 }
-
 
 const TOWER_PLACE_POSITIONS = {
     level_1: [

@@ -27,7 +27,7 @@ class MainGameLoop{
         }
         else if(data.currentGameStatus == 'main'){
             this.status = 2;
-            this.stop();
+            this.clear();
         }
         else{
             this.status = 1;
@@ -61,8 +61,9 @@ class MainGameLoop{
         })
         Object.values(this.animationRenderer).forEach(renderer => {
             renderer.clearCanvas()
-          
         })
+        this.refs['levelManager'].towersManager.reset()
+        this.refs['levelManager'].resetPositions()
     }
 
     stop(){
@@ -82,6 +83,7 @@ class MainGameLoop{
         Object.values(this.animationRenderer).forEach(renderer => {
             renderer.render()
         })
+        this.refs['levelManager'].createHTML()
         
     }
 
@@ -103,12 +105,15 @@ class Engine{
 
         //? State Managers
         this.stateManager = new PlayerStateManager()
+        this.towerStateManager = new TowersStateManager()
 
         //? Audio Managers
         this.audioManager = new AudioManager()
 
-        //? Event Managers and linking state manager to them
+        //? Event Managers
         this.clickEventHandler = new ClickEventManager()
+        this.levelManager = new LevelManager()
+        
 
         //? Game Loops
         this.mainLoop = new MainGameLoop();
@@ -124,10 +129,15 @@ class Engine{
         this.renderingEngine.renderers.level.dataAnimations.linkStateManager(this.stateManager)
         this.renderingEngine.linkMainLoop(this.mainLoop)
         this.clickEventHandler.linkStateManager(this.stateManager)
+        this.levelManager.linkTowerManager(this.towerStateManager)
         this.mainLoop.linkRenderers(this.renderingEngine.renderers.level)
         this.mainLoop.registerRef({
             type: 'stateManager',
             target: this.stateManager
+        })
+        this.mainLoop.registerRef({
+            type: 'levelManager',
+            target: this.levelManager
         })
 
 
@@ -135,7 +145,8 @@ class Engine{
         this.stateManager.createObserver("audio", this.audioManager, ["volume"])
         this.stateManager.createObserver("renderEngine", this.renderingEngine, ["currentGameWindow","currentGameStatus","currentGameLevel"])
         this.stateManager.createObserver("gameLoop", this.mainLoop, ["currentGameStatus"])
-
+        this.stateManager.createObserver("level", this.levelManager, ["currentGameLevel"])
+        this.towerStateManager.createObserver("towers",this.renderingEngine.renderers.level.towers, ["towers"])
         // this.stateManager.bootNotification()
 
     }
