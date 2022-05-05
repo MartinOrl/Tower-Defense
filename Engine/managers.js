@@ -16,12 +16,30 @@ class ClickEventManager{
         //?
         //?
         //****************************/ 
-
+        console.warn(event)
         if(event.action == ActionTypes.WINDOW_SET){
-          
+            let modifier;
+            console.warn(this.stateManager.getGameStatus)
+            if(event.windowChange == 'return'){
+                if(this.stateManager.getGameStatus == 'main'){
+                    modifier = 'main'
+                }
+                if(this.stateManager.getGameStatus == 'pause'){
+                    modifier = 'menu'
+                }
+            }
             this.stateManager.updateState({
-                currentGameWindow: event.windowChange == 'return' ? this.stateManager.getGameStatus == 'paused' ? 'main' : 'menu' : event.windowChange
+                currentGameWindow: event.windowChange == 'return' ? modifier : event.windowChange
             })
+        }
+        else if(event.action == ActionTypes.TOWER_UPGRADE){
+            let tower = this.stateManager.state.selectedTower
+            if(tower.level < 3){
+                tower.upgrade()
+                this.stateManager.updateState({
+                    selectedTower: tower
+                })
+            }
         }
         else if(event.action == ActionTypes.GAME_STATE_SET){
             if(event.stateChange == 'main'){
@@ -65,7 +83,19 @@ class LevelManager{
     }
 
     getNotification(data){
-        this.setPositions(data.currentGameLevel);
+       
+        if(!Array.isArray(data) &&  data.currentGameLevel){
+      
+            this.setPositions(data.currentGameLevel);
+        } else{
+            console.log(data)
+            this.activePositions = data.towersPositions
+        }
+        
+    }
+
+    updatePositions(data){
+
     }
 
     resetPositions(){
@@ -77,35 +107,60 @@ class LevelManager{
         console.log("Creating tower html")
         let target = document.querySelector(".actions")
 
-        this.towersPositions.forEach(position => {
+        this.towersPositions.forEach((position,i) => {
 
             let {x,y} = position
             let newHTMLElement = document.createElement("span")
+            newHTMLElement.id = `towerEvent_${i}`
             newHTMLElement.style.left = `${x - this.basicProperties.width}px`;
             newHTMLElement.style.top = `${y - this.basicProperties.height}px`;
             newHTMLElement.style.width = `${this.basicProperties.width*2}px`;
             newHTMLElement.style.height = `${this.basicProperties.height*2}px`;
             newHTMLElement.addEventListener("click", () => {
-                if(this.activePositions.includes(position) ){
-
-                }
-                else{
-                    this.activePositions.push(position)
-                    this.towersManager.createTower(new ArcherTower(x,y))
-                }
+                // if(this.activePositions.length > 0 && this.activePositions.includes(position)){
+                 
+                //     this.towersManager.callHide(position)
+                
+                // }
+                // else{
+                //     this.towersManager.callTowerBuild(x,y)
+                // }
+                this.towersManager.callTowerClick(x,y,i)
                 
                 
             })
             target.appendChild(newHTMLElement)
         })
+    }
 
-    
+    createExtraHTML(buildPaths){
+        console.log("Creating tower html")
+        let target = document.querySelector(".actions")
+        
+        buildPaths.forEach((position,i) => {
+
+            let {x,y} = position
+            let newHTMLElement = document.createElement("span")
+            newHTMLElement.classList.add(`towerEventExtra`)
+            newHTMLElement.style.left = `${position.x}px`;
+            newHTMLElement.style.top = `${position.y}px`;
+            newHTMLElement.style.width = `48px`;
+            newHTMLElement.style.height = `48px`;
+            newHTMLElement.addEventListener("click", () => {
+                let tower = i == 0 ? 'archer' : i == 1 ? "magic" : "bombard"
+                this.towersManager.buildTower(tower,x,y)
+            })
+            target.appendChild(newHTMLElement)
+        })
+    }
+
+    deleteExtraHTML(){
+        document.querySelectorAll(".towerEventExtra").forEach(extra => {
+            extra.remove()
+        })
     }
 
 }
-
-
-
 
 class MasterManager{
     //********************************************************* */

@@ -10,6 +10,7 @@ const ActionTypes = {
     CONFIG_RESET: 'CONFIG_RESET',
     CONFIG_MODIFY: 'CONFIG_MODIFY',
     ABILITY_USE: 'ABILITY_USE',
+    TOWER_UPGRADE: 'TOWER_UPGRADE',
     TOWER_LEVELUP_UNDO: 'TOWER_LEVELUP_UNDO',
     PLAYER_UPGRADE: 'PLAYER_UPGRADE',
     UPGRADE_PLAYER_SPEC: 'UPGRADE_PLAYER_SPEC'
@@ -85,12 +86,32 @@ const IMG_ASSETS_LIST = {
         win_star: new IMG_ASSET("./Assets/Misc/win_star.webp"),
         win: new IMG_ASSET("./Assets/Misc/win.webp")
     },
+    upgrades: {
+        tower: {
+            archer1: new IMG_ASSET("./Assets/Upgrade/Tower/archer1.webp"),
+            archer2: new IMG_ASSET("./Assets/Upgrade/Tower/archer2.webp"),
+            archer3: new IMG_ASSET("./Assets/Upgrade/Tower/archer3.webp"),
+        }
+    },
     towers: {
+        build: new IMG_ASSET("./Assets/Towers/build.png"),
         archer: {
             level_1: new IMG_ASSET("./Assets/Towers/Archer_1.webp"),
             level_2: new IMG_ASSET("./Assets/Towers/Archer_2.webp"),
             level_3: new IMG_ASSET("./Assets/Towers/Archer_3.webp"),
+        },
+        mage: {
+            level_1: new IMG_ASSET("./Assets/Towers/Mage_1.png"),
+            level_2: new IMG_ASSET("./Assets/Towers/Mage_2.png"),
+            level_3: new IMG_ASSET("./Assets/Towers/Mage_3.png")
+        },
+        bombard: {
+            level_1: new IMG_ASSET("./Assets/Towers/bombard_1.png"),
+            level_2: new IMG_ASSET("./Assets/Towers/bombard_2.png"),
+            level_3: new IMG_ASSET("./Assets/Towers/bombard_3.png")
         }
+
+
     }
 
 }

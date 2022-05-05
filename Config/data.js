@@ -414,3 +414,193 @@ const LEVEL_DATA = {
         }   
     }
 }
+
+const TOWER_UPGRADE = {
+    controls: {
+        type: "button",
+        data: [
+            {
+                clickEventData: {
+                    action: ActionTypes.TOWER_LEVELUP_UNDO,
+                },
+   
+                position: {
+                    x: 487,
+                    y: 601
+                },
+                width: 121,
+                height: 72,
+                image: IMG_ASSETS_LIST.buttons.undo
+            },
+            {
+                clickEventData: {
+                    action: ActionTypes.GAME_STATE_SET,
+                    stateTarget: 'game_state',
+                    stateChange: 'resume',
+                },
+
+                position: {
+                    x: 672,
+                    y: 601
+                },
+                width: 121,
+                height: 72,
+                image: IMG_ASSETS_LIST.buttons.done
+            },
+            {
+                clickEventData: {
+                    action: ActionTypes.GAME_STATE_SET,
+                    stateTarget: 'game_state',
+                    stateChange: 'resume',
+                },
+          
+                position: {
+                    x: 953,
+                    y: 31
+                },
+                width: 72,
+                height: 72,
+                image: IMG_ASSETS_LIST.buttons.close
+            },
+            {
+                clickEventData: {
+                    action: ActionTypes.TOWER_UPGRADE,
+                },
+       
+                position: {
+                    x: 382,
+                    y: 502
+                },
+                width: 155,
+                height: 62,
+                image: IMG_ASSETS_LIST.buttons.upgrade
+            },
+            {
+                clickEventData: {
+                    action: ActionTypes.TOWER_EXTRA_UPGRADE,
+                },
+      
+                position: {
+                    x: 619,
+                    y: 502
+                },
+                width: 73,
+                height: 66,
+                image: IMG_ASSETS_LIST.upgrades.tower.archer1
+            },
+            {
+                clickEventData: {
+                    action: ActionTypes.TOWER_EXTRA_UPGRADE,
+                },
+        
+                position: {
+                    x: 724,
+                    y: 502
+                },
+                width: 73,
+                height: 66,
+                image: IMG_ASSETS_LIST.upgrades.tower.archer2
+            },
+            {
+                clickEventData: {
+                    action: ActionTypes.TOWER_EXTRA_UPGRADE,
+                },
+        
+                position: {
+                    x: 829,
+                    y: 502
+                },
+                width: 73,
+                height: 66,
+                image: IMG_ASSETS_LIST.upgrades.tower.archer3
+            },
+        ]
+    },
+
+    dataStationary: {
+        text: {
+            type: "text",
+            data: [
+                new HeadingText("Archer Tower","TitanOne",48,459,144),
+                
+            ]
+        },
+        
+        board: {
+            type: "board",
+            data: [
+                new ExtraBoard(609,189,304,280,'rgba(61, 41, 26, 0.65)'),
+                
+            ]
+        },
+        
+        misc: {
+            type: "image",
+            data: [
+                
+            ]
+        }
+    },
+
+    // dataAnimations: {
+    //     text: {
+    //         type: "text",
+    //         data: [
+    //             new BasicText("1", "TitanOne",16,864,221),
+    //             new BasicText("1", "TitanOne",16,864,285),
+    //             new BasicText("1", "TitanOne",16,864,349),
+    //             new BasicText("1", "TitanOne",16,864,413),
+    //         ]
+    //     },
+    //     misc: {
+    //         type: "image",
+    //         data: [
+
+    //         ]
+    //     }
+    // },
+
+    board: {
+        type: 'image',
+        data: [
+            {
+                image: IMG_ASSETS_LIST.misc.board_wide,
+                position: {
+                    x: 274,
+                    y: 56
+                },
+                width: 732,
+                height: 588
+            },
+            
+        ]
+    },
+    extraText: {
+        type: "text",
+        data: [
+         
+            new BasicText("Level:", "TitanOne",16,403,460),
+            new BasicText("Strength", "TitanOne",16,641,223),
+            new BasicText("Attack Speed", "TitanOne",16,641,285),
+            new BasicText("Range", "TitanOne",16,641,349),
+            new BasicText("Archers", "TitanOne",16,641,413),
+            new BasicText("1/3", "TitanOne",24,462,463),
+            new BasicText("1", "TitanOne",16,864,221),
+            new BasicText("1", "TitanOne",16,864,285),
+            new BasicText("1", "TitanOne",16,864,349),
+            new BasicText("1", "TitanOne",16,864,413),
+        ]
+    },
+    extraGraphics: {
+        type: "extra",
+        data: [
+            new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_red,641,237,240,14),
+            new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,641,301,240,14),
+            new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,641,365,240,14),
+            new ExtraGraphic(IMG_ASSETS_LIST.bars.bar_yellow,641,429,240,14),
+        ]
+    },
+   
+    
+
+}

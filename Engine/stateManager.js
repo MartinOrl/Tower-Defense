@@ -60,8 +60,34 @@ class TowersStateManager extends StateManager{
         this.state = {
             towers: [
                 
-            ]
+            ],
+            temp: '',
+            towersRef: []
         }
+        this.buildStatus = 0;
+        this.posRef = {
+            x: 0,
+            y: 0
+        }
+
+        this.stateManagersRef = {
+
+        }
+       
+    }
+
+    getNotification(data){
+        console.warn("Tower State Notification")
+        let tower = data.selectedTower
+        this.state.towers.forEach((towerData,i) => {
+            if(towerData.positionRef.x == tower.positionRef.x){
+                this.state.towers[i] = tower
+            }
+        })
+    }
+
+    useRef(manager){
+        this.stateManagersRef[manager.type] = manager.target
     }
 
     logInfo(info,type=""){
@@ -75,30 +101,164 @@ class TowersStateManager extends StateManager{
         }
     }
 
-    createTower(towerData){
-        console.groupCollapsed("towerStateChange |  Modifying state")
-        console.log("previous state", this.state)
-        this.state.towers.push(towerData)
+    callTowerBuild(x,y){
+        this.rendererNotify("gameBoard", {
+            type: 'image',
+            data: [new ExtraGraphic(IMG_ASSETS_LIST.towers.build,x-129/2,y-105/2,129,105)]
+        })
+        let buildPositions = this.state.towersPositions
+        buildPositions.push({
+            x,y
+        })
+        this.state.towersPositions = buildPositions
+        this.notifyObserver("levelManager")
+    }
+
+    toggleBuildWindow(x,y){
+        this.rendererNotify("gameBoard", {
+            type: 'image',
+            data: [new ExtraGraphic(IMG_ASSETS_LIST.towers.build,x-129/2,y-105/2,129,105)]
+        })
+        let buildPaths = [
+    
+        ]
+        buildPaths.push({
+            x: x-129/2,
+            y: y-129/2 + 12
+        })
+        buildPaths.push({
+            x: x-129/2 + 39+40,
+            y: y-129/2 + 12
+        })
+        buildPaths.push({
+            x: x-129/2 + 39,
+            y: y-129/2 + 12 + 56
+        })
+        this.observers['levelManager'][0].createExtraHTML(buildPaths)
+        this.buildStatus = 1;
+    }
+
+    callTowerClick(x,y,i){
+        console.warn("ClickPos:",{x,y})
+        console.warn(this.state.towersRef)
+        let flag = 0;
+        for (let i = 0; i < this.state.towersRef.length; i++) {
+            if (this.state.towersRef[i].x == x && this.state.towersRef[i].y == y) {
+                flag = i+1;
+                break;
+            }
+        }
+        if(flag){
+            //! Case when tower already built
+            console.warn("Clicked on already built tower")
+
+            this.stateManagersRef["masterState"].updateState({
+                currentGameWindow: "towerUpgrade",
+                currentGameStatus: "pause",
+                selectedTower: this.state.towers[flag-1]
+            })
+        }
+        else{
+            if(!this.buildStatus){
+                this.posRef = {x,y}
+                this.toggleBuildWindow(x,y)
+            }
+            else if(this.buildStatus){
+                if(this.posRef.x != x){
+                    this.posRef = {x,y}
+                    this.toggleBuildWindow(x,y)
+                }
+                else if(this.posRef.x == x){
+                    this.rendererNotify("gameBoard", {
+                        type: 'image',
+                        data: []
+                    })
+                    this.observers['levelManager'][0].deleteExtraHTML()
+                    this.buildStatus = 0;
+                }
+            }
+            
+        }
+    }
+
+    buildTower(towerType,x,y){
+
+        let tower;
+        if(towerType == 'archer'){
+            tower = new ArcherTower(this.posRef.x,this.posRef.y)
+        }
+        else if(towerType == 'magic'){
+            tower = new MagicTower(this.posRef.x,this.posRef.y)
+        }
+        else if(towerType == 'bombard'){
+            tower = new BombardTower(this.posRef.x, this.posRef.y)
+        }
+        this.state.towers.push(tower)
+
+        let processed = []
+
+
+        this.stateManagersRef["masterState"].updateState({
+            coins: this.stateManagersRef["masterState"].getCoins - tower.price
+        })
+
+        this.observers['levelManager'][0].deleteExtraHTML()
+
+        this.state.towers.forEach(tower => {
+            processed.push(tower.dataForRenderer)
+        })
+
+        this.rendererNotify("towers", {
+            type: 'image',
+            data: processed
+        })
+
+        this.buildStatus = 0;
+        this.rendererNotify("gameBoard", {
+            type: "image",
+            data: []
+        })
+        this.state.towersRef.push(this.posRef)
+        this.posRef = {
+            x: 0,
+            y: 0
+        }
+     
+    }
+
+    callHide(position){
+
+    }
+
+    createTower(){
+        // console.groupCollapsed("towerStateChange |  Modifying state")
+        // console.log("previous state", x, y)
+        // this.state.towers.push(towerData)
         
 
-        Object.keys(this.observers).forEach(observer => {
-            let initialData = []
+        // // Object.keys(this.observers).forEach(observer => {
+        // //     let initialData = []
 
-            this.state.towers.forEach(tower => {
-                initialData.push(tower.dataForRenderer)
-            })
-            this.rendererNotify(observer,{
-                type: 'image',
-                data: initialData
-            })
-        })
-        console.log("next state", this.state)
-        console.groupEnd()
+        // //     this.state.towers.forEach(tower => {
+        // //         initialData.push(tower.dataForRenderer)
+        // //     })
+        // //     this.rendererNotify(observer,{
+        // //         type: 'image',
+        // //         data: initialData
+        // //     })
+        // // })
+        // console.log("next state", this.state)
+        // console.groupEnd()
         
     
     }
     reset(){
-        this.state.towers = []
+        this.state.towers = [
+                
+        ],
+        this.state.temp = '',
+        this.state.towersRef =  []
+
         Object.keys(this.observers).forEach(observer => {
             let initialData = []
             this.rendererNotify(observer,{
@@ -157,9 +317,10 @@ class PlayerStateManager extends StateManager{
             bonusMana: 0,
             maxMana: 100,
             manaLimit: 200,
-            coins: 0,
+            coins: GAME_CONFIG.INITIAL_COINS,
             mana: 0,
-            volume: 0
+            volume: 0,
+            selectedTower: false
             
         }
    
@@ -181,8 +342,6 @@ class PlayerStateManager extends StateManager{
         localStorage.setItem("save", data)
     }
 
-
-
     logInfo(info,type=""){
         if(this.logging){
             if(type == 'warn'){
@@ -194,16 +353,6 @@ class PlayerStateManager extends StateManager{
         }
     }
 
-    
-
-
-    
-
-    // bootNotification(){
-    //     Object.keys(this.observers).forEach(observerKey => {
-    //         this.notifyObserver(observerKey)
-    //     })  
-    // }
 
 
     stateReset(){
@@ -220,9 +369,10 @@ class PlayerStateManager extends StateManager{
             bonusMana: 0,
             maxMana: 100,
             manaLimit: 200,
-            coins: 0,
+            coins: GAME_CONFIG.INITIAL_COINS,
             mana: 0,
-            volume: 0
+            volume: 0,
+            selectedTower: {}
            
         }
 
@@ -235,6 +385,7 @@ class PlayerStateManager extends StateManager{
     }
 
     startManaUpdate(){
+        // console.log("Mana:",this.getMana + 1 + this.state.bonusMana*0.5)
         this.manaInterval = setInterval(() => {
             if(this.getMana < this.state.maxMana){
                 this.updateState({
@@ -255,6 +406,12 @@ class PlayerStateManager extends StateManager{
 
         let flag = 0;
         Object.keys(val).forEach(key => {
+            if(key == 'selectedTower'){
+                
+                this.state[key] = val[key]
+
+                flag = 1;
+            }
             if(this.state[key] != val[key] || !Object.keys(this.state).includes(key)){
                 this.state[key] = val[key]
                 if((key == 'currentGameStatus' && val[key] == 'play') || (key == 'currentGameStatus' && val[key] == 'resume')){
@@ -279,6 +436,7 @@ class PlayerStateManager extends StateManager{
                     }
                 })
                 if(match){
+                    console.log(observer)
                     this.notifyObserver(observer)
                 }
                 

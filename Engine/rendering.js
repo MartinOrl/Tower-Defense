@@ -76,20 +76,26 @@ class StaticGraphicsRenderer extends Renderer{
         this.rendererType = 'static'
     }
 
+
     render(){
         this.clearCanvas()
         Object.keys(this.data).forEach(dataKey => {
            
-            if(this.data[dataKey].type == 'text'){
+            if(this.data[dataKey].type == 'board'){
                 this.data[dataKey].data.forEach(item => {
-                    this.createText(item)
+                    this.createExtraBoard(item)
                 })
             }
             else if(this.data[dataKey].type == 'image'){
                 this.data[dataKey].data.forEach(item => {
                     this.createImage(item)
                 })
-                    
+            
+            }
+            else if(this.data[dataKey].type == 'text'){
+                this.data[dataKey].data.forEach(item => {
+                    this.createText(item)
+                })
             
             }
             
@@ -109,7 +115,7 @@ class AnimationsRenderer extends Renderer{
             step: 0,
             width: 0
         }
-        console.log(this.data)
+     
     }
 
     linkStateManager(manager){
@@ -177,6 +183,7 @@ class AnimationsRenderer extends Renderer{
 
 }
 
+
 class SubRenderer extends Renderer{
     constructor(canvasSelectorString,data=false){
 
@@ -193,24 +200,16 @@ class SubRenderer extends Renderer{
             this.data = data
             this.type = ''
         }
-
-        
-        
-    
     }
-
-
-    
-
     getNotification(data){
         this.data = data.data
         this.type = data.type
-        console.log(data)
+     
         this.render()
     }
 
     createHTML(){
-        console.log("Creating html")
+        
         let target = document.querySelector(".actions")
         target.innerHTML = ''
 
@@ -266,10 +265,7 @@ class SubRenderer extends Renderer{
                 this.createExtraBoard(board)
             })
         }
-    
-      
     }
-
 }
 
 class RenderingEngine{
@@ -281,13 +277,15 @@ class RenderingEngine{
         this.dataState = {
             currentGameWindow: false,
             currentGameStatus: false,
-            currentGameLevel: 0
+            currentGameLevel: 0,
+            selectedTower: false
         }
         this.updates = {
             currentGameWindow: false,
             currentGameStatus: false,
             currentGameLevel: false,
-            mana: 0
+            selectedTower: false,
+          
         }
 
         this.mainLoopRef;
@@ -307,7 +305,15 @@ class RenderingEngine{
                 extraGraphics: new SubRenderer("#masterExtraGraphics",MENU_DATA.main.extraGraphics),
                 extraText: new SubRenderer("#masterExtraText",MENU_DATA.main.extraText),
                 controls: new SubRenderer("#masterControls", MENU_DATA.main.controls)
+            },
+            upgrade: {
+                board: new SubRenderer("#masterControlBoard", TOWER_UPGRADE.board),
+                dataStationary: new StaticGraphicsRenderer("#masterStationaryGraphics", TOWER_UPGRADE.dataStationary),
+                extraGraphics: new SubRenderer("#masterExtraGraphics",TOWER_UPGRADE.extraGraphics),
+                extraText: new SubRenderer("#masterExtraText",TOWER_UPGRADE.extraText),
+                controls: new SubRenderer("#masterControls", TOWER_UPGRADE.controls)
             }
+            
         }
     }
 
@@ -319,6 +325,13 @@ class RenderingEngine{
         this.eventManagers[eventManager.type] = eventManager.manager
     }
 
+    upgradeRefresh(){
+        this.cleanBlock("upgrade")
+        Object.values(this.renderers.upgrade).forEach(renderer => {
+            renderer.render()
+        })
+    }
+
     boot(){
         Object.keys(this.renderers.menu).forEach(renderer =>{
             Object.keys(this.eventManagers).forEach(manager => {
@@ -327,7 +340,7 @@ class RenderingEngine{
                     manager: this.eventManagers[manager]
                 })
             })
-            this.renderers.menu[renderer].render()
+            // this.renderers.menu[renderer].render()
         })
         
         Object.values(this.renderers.level).forEach(renderer => {
@@ -338,7 +351,17 @@ class RenderingEngine{
                 })
             })
         })
+
+        Object.values(this.renderers.upgrade).forEach(renderer => {
+            Object.keys(this.eventManagers).forEach(manager => {
+                renderer.setEventManager({
+                    type: manager,
+                    manager: this.eventManagers[manager]
+                })
+            })
+        })
        
+        
 
     }
 
@@ -361,8 +384,10 @@ class RenderingEngine{
     }
 
     handleUpdate(){
+        console.warn(this.updates)
         Object.keys(this.updates).forEach(update => {
             if(this.updates[update]){
+
                 if(this.updates[update] != this.dataState[update]){
                     this.dataState[update] = this.updates[update]
                     if(update == 'currentGameStatus'){
@@ -372,21 +397,31 @@ class RenderingEngine{
                             document.querySelector(".shadow").classList.remove("shadow-show")
                             this.dataState.currentGameWindow = false
                             this.cleanBlock("menu")
+                            this.cleanBlock("upgrade")
 
                         }
                         else if(this.updates[update] == 'resume'){
                             document.querySelector(".shadow").classList.remove("shadow-show")
                             this.dataState.currentGameWindow = false
                             this.cleanBlock("menu")
+                            this.cleanBlock("upgrade")
+                            this.selectedTower = false
                         }
                         else if(this.updates[update] == 'pause'){
                             document.querySelector(".shadow").classList.add("shadow-show")
-                            Object.keys(this.renderers.menu).forEach(renderer => {
-                                this.renderers.menu[renderer].getNotification({
-                                    type: MENU_DATA[this.updates.currentGameWindow][renderer].type,
-                                    data: MENU_DATA[this.updates.currentGameWindow][renderer].data
+                            if(this.updates.currentGameWindow == 'towerUpgrade'){
+                                
+                            }
+                            else{
+                                Object.keys(this.renderers.menu).forEach(renderer => {
+                                    this.renderers.menu[renderer].getNotification({
+                                        type: MENU_DATA[this.updates.currentGameWindow][renderer].type,
+                                        data: MENU_DATA[this.updates.currentGameWindow][renderer].data
+                                    })
                                 })
-                            })
+                            }
+                            
+                            
                         }
                         else if(this.updates[update] == 'main'){
                             this.cleanBlock("level")
@@ -402,16 +437,42 @@ class RenderingEngine{
                         }
                     }
                     else if(update == 'currentGameWindow'){
+                        if(this.updates[update] == 'towerUpgrade'){
 
-                        Object.keys(this.renderers.menu).forEach(renderer => {
-                            this.renderers.menu[renderer].getNotification({
-                                type: MENU_DATA[this.updates[update]][renderer].type,
-                                data: MENU_DATA[this.updates[update]][renderer].data
+                            let tower = this.updates.selectedTower
+
+                            this.renderers.upgrade["dataStationary"].data.misc.data = []
+                            this.renderers.upgrade["dataStationary"].data.misc.data.push(new ExtraGraphic(tower.image,366,211,187,227))
+
+                            this.renderers.upgrade["dataStationary"].data.text.data[0].text = tower.type
+                            this.renderers.upgrade["extraText"].data[5] = new BasicText(`${tower.level}/3`,"TitanOne",24,462,463)
+
+                            Object.values(this.renderers.upgrade).forEach(renderer => {
+                                renderer.render()
                             })
-                          
-                        })
+                        }
+                        else{
+                            Object.keys(this.renderers.menu).forEach(renderer => {
+                                this.renderers.menu[renderer].getNotification({
+                                    type: MENU_DATA[this.updates[update]][renderer].type,
+                                    data: MENU_DATA[this.updates[update]][renderer].data
+                                })
+                              
+                            })
+                        }
+                        
                     }
                     
+                }
+                if(update == 'selectedTower' && this.dataState.currentGameWindow == 'towerUpgrade'){
+                    console.log(this.dataState.selectedTower)
+                    this.cleanBlock("upgrade")
+                    this.renderers.upgrade["dataStationary"].data.misc.data[0] = new ExtraGraphic(this.dataState.selectedTower.image,366,211,187,227)
+                    this.renderers.upgrade["extraText"].data[5] = new BasicText(`${this.dataState.selectedTower.level}/3`,"TitanOne",24,462,463)
+
+                    Object.values(this.renderers.upgrade).forEach(renderer => {
+                        renderer.render()
+                    })
                 }
            
             }
@@ -420,14 +481,18 @@ class RenderingEngine{
         this.updates = {
             currentGameWindow: false,
             currentGameStatus: false,
-            currentGameLevel: false
+            currentGameLevel: false,
+            selectedTower: false
         }
     }
 
     getNotification(data){
-        
+        console.warn(data)
         Object.keys(data).forEach(updateKey => {
             if(data[updateKey] != this.dataState[updateKey]){
+                this.updates[updateKey] = data[updateKey]
+            }
+            if(updateKey == 'selectedTower'){
                 this.updates[updateKey] = data[updateKey]
             }
         })

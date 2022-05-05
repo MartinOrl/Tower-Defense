@@ -29,6 +29,10 @@ class MainGameLoop{
             this.status = 2;
             this.clear();
         }
+        else if(data.currentGameStatus == 'resume'){
+            this.status = 1;
+            this.resume()
+        }
         else{
             this.status = 1;
             this.initialize()
@@ -70,6 +74,16 @@ class MainGameLoop{
         Object.values(this.animationRenderer).forEach(renderer => {
             renderer.haltAnimation();
         })
+    }
+
+    resume(){
+        Object.values(this.renderers).forEach(renderer => {
+            renderer.render()
+        })
+        Object.values(this.animationRenderer).forEach(renderer => {
+            renderer.render()
+        })
+        this.refs['levelManager'].createHTML()
     }
 
     initialize(){
@@ -139,14 +153,25 @@ class Engine{
             type: 'levelManager',
             target: this.levelManager
         })
+        this.mainLoop.registerRef({
+            type: 'TowersManager',
+            target: this.towerStateManager
+        })
+        this.towerStateManager.useRef({
+            type: "masterState",
+            target: this.stateManager
+        })
 
 
         //? OBserver Creation
         this.stateManager.createObserver("audio", this.audioManager, ["volume"])
-        this.stateManager.createObserver("renderEngine", this.renderingEngine, ["currentGameWindow","currentGameStatus","currentGameLevel"])
+        this.stateManager.createObserver("renderEngine", this.renderingEngine, ["currentGameWindow","currentGameStatus","currentGameLevel","selectedTower"])
         this.stateManager.createObserver("gameLoop", this.mainLoop, ["currentGameStatus"])
         this.stateManager.createObserver("level", this.levelManager, ["currentGameLevel"])
+        this.stateManager.createObserver("selectedTower", this.towerStateManager, ["selectedTower"])
         this.towerStateManager.createObserver("towers",this.renderingEngine.renderers.level.towers, ["towers"])
+        this.towerStateManager.createObserver("gameBoard",this.renderingEngine.renderers.level.gameBoard, ["temp"])
+        this.towerStateManager.createObserver("levelManager",this.levelManager, ["towersPositions"])
         // this.stateManager.bootNotification()
 
     }
