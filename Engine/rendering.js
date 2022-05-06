@@ -67,6 +67,70 @@ class Renderer{
     
 }
 
+class EnemiesRenderer extends Renderer{
+    constructor(canvasSelectorString){
+        super(canvasSelectorString)
+        this.data = []
+        this.frame = 0;
+
+        this.stateRef;
+    }
+
+    useRef(ref){
+        this.stateRef = ref
+    }
+
+    getNotification(data){
+        console.warn("ENEMIES RENDERER NOTIFICATION")
+        this.data = data
+        this.render()
+    }
+
+    advancedCreateImage(imageData){
+      
+            const {position, width, height} = imageData
+            const {image} = imageData.image
+            
+            this.context.drawImage(image, imageData.spriteWidthMultiplier*width, imageData.spriteHeightMultiplier*height, width, height, position.x,  position.y, width, height);
+    }
+
+    animate(){
+        this.clearCanvas();
+        this.frame += 1;
+        let delTargets = []
+        this.data.forEach(enemy => {
+            enemy.updateSprite();
+            enemy.move();
+            if(enemy.positionIndex == LEVEL_1_PATHS.basic.data.length-1 ){
+                console.warn("EMOTIONAL DAMAGE")
+                delTargets.push(enemy.id)
+            }
+            this.advancedCreateImage(enemy)
+        })
+        this.data = this.data.filter(enemy => !delTargets.includes(enemy.id))
+        
+        setTimeout(() => {
+            requestAnimationFrame(this.animate.bind(this))
+        }, 50)
+    }
+
+    render(){
+      
+        if(this.stateRef?.getGameStatus == 'play'){
+            console.warn("Rendering Enemies")
+            this.clearCanvas()
+            this.data.forEach(enemy => {
+                
+                this.advancedCreateImage(enemy)
+            })
+            
+            // this.animate()
+        }
+        
+    }
+
+}
+
 class StaticGraphicsRenderer extends Renderer{
     constructor(canvasSelectorString,data){
         super(canvasSelectorString)
@@ -293,7 +357,7 @@ class RenderingEngine{
         this.renderers = {
             level: {
                 gameBoard: new SubRenderer("#levelBoard"),
-                enemies: new SubRenderer("#enemies"),
+                enemies: new EnemiesRenderer("#enemies"),
                 towers: new SubRenderer("#towers"),
                 dataBoard: new SubRenderer("#levelDataBoard", LEVEL_DATA.dataBoard),
                 dataStationary: new StaticGraphicsRenderer("#levelDataStationary",LEVEL_DATA.dataStationary ),
@@ -302,6 +366,7 @@ class RenderingEngine{
             },
             menu: {
                 board: new SubRenderer("#masterControlBoard",MENU_DATA.main.board),
+                extraBoard: new SubRenderer("#masterStationaryGraphics",MENU_DATA.main.extraBoard),
                 extraGraphics: new SubRenderer("#masterExtraGraphics",MENU_DATA.main.extraGraphics),
                 extraText: new SubRenderer("#masterExtraText",MENU_DATA.main.extraText),
                 controls: new SubRenderer("#masterControls", MENU_DATA.main.controls)
@@ -391,13 +456,14 @@ class RenderingEngine{
                 if(this.updates[update] != this.dataState[update]){
                     this.dataState[update] = this.updates[update]
                     if(update == 'currentGameStatus'){
-                        if(this.updates[update] == 'play'){
+                        if(this.updates[update] == 'play' || this.updates[update] == 'continue'){
 
 
                             document.querySelector(".shadow").classList.remove("shadow-show")
                             this.dataState.currentGameWindow = false
                             this.cleanBlock("menu")
                             this.cleanBlock("upgrade")
+                            this.renderers.level.enemies.render()
 
                         }
                         else if(this.updates[update] == 'resume'){

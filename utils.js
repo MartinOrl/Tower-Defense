@@ -11,8 +11,6 @@
 //     dot.style.top = e.layerY + "px"
 //     pathHelperContainer.appendChild(dot);
 //     pathArray.push([e.layerX, e.layerY])
-// })
-
-// document.querySelector("#path-export").addEventListener("click", () => {
 //     console.log(pathArray)
 // })
+

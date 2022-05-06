@@ -12,22 +12,21 @@
 <body>
     <div class="canvas-container">
         
-        <canvas id="levelBoard" width="1600px" height="900px"></canvas>
-        <canvas id="enemies" width="1600px" height="900px"></canvas>
-        <canvas id="towers" width="1600px" height="900px"></canvas>
-        <canvas id="levelDataBoard" width="1600px" height="900px"></canvas>
-        <canvas id="levelDataStationary" width="1600px" height="900px"></canvas>
-        <canvas id="levelDataAnimations" width="1600px" height="900px"></canvas>
-        <canvas id="levelControls" width="1600px" height="900px"></canvas>
-        <canvas id="masterControlBoard" width="1600px" height="900px"></canvas>
-        <canvas id="masterStationaryGraphics" width="1600px" height="900px"></canvas>
-        <canvas id="masterExtraGraphics" width="1600px" height="900px"></canvas>
-        <canvas id="masterExtraText" width="1600px" height="900px"></canvas>
-        <canvas id="masterControls" width="1600px" height="900px"></canvas>
+        <canvas id="levelBoard" width="1280px" height="720px"></canvas>
+        <canvas id="enemies" width="1280px" height="720px"></canvas>
+        <canvas id="towers" width="1280px" height="720px"></canvas>
+        <canvas id="levelDataBoard" width="1280px" height="720px"></canvas>
+        <canvas id="levelDataStationary" width="1280px" height="720px"></canvas>
+        <canvas id="levelDataAnimations" width="1280px" height="720px"></canvas>
+        <canvas id="levelControls" width="1280px" height="720px"></canvas>
+        <canvas id="masterControlBoard" width="1280px" height="720px"></canvas>
+        <canvas id="masterStationaryGraphics" width="1280px" height="720px"></canvas>
+        <canvas id="masterExtraGraphics" width="1280px" height="720px"></canvas>
+        <canvas id="masterExtraText" width="1280px" height="720px"></canvas>
+        <canvas id="masterControls" width="1280px" height="720px"></canvas>
         <div class="shadow"></div>
         <div class="actions"></div>
         <div class="level"></div>
-        
     </div>
    
     <div class="state">
@@ -59,10 +58,12 @@
     <script src="./Config/config.js"></script>
     <script src="./Models/Misc/graphicsPrefab.js"></script>
     <script src="./Models/Towers/towers.js"></script>
+    <script src="./Models/Entities/enemy.js"></script>
 
     <script src="./utils.js"></script>
     
     <script src="./Config/data.js"></script>
+    <script src="./Engine/enemyProcessing.js"></script>
     <script src="./Engine/managers.js"></script>
     <script src="./Engine/stateManager.js"></script>
     <script src="./Engine//rendering.js"></script>

@@ -88,7 +88,8 @@ window.addEventListener("load", () => {
        
         }
     }
-
+    let image = IMG_ASSETS_LIST.levels[`level_1`].image.src
+    document.querySelector(".level").style.background = `url(${image})`
     var TowerDefense = new Engine()
     TowerDefense.boot()
 

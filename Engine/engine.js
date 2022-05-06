@@ -120,6 +120,7 @@ class Engine{
         //? State Managers
         this.stateManager = new PlayerStateManager()
         this.towerStateManager = new TowersStateManager()
+        this.enemyStateManager = new EnemiesStateManager()
 
         //? Audio Managers
         this.audioManager = new AudioManager()
@@ -139,6 +140,9 @@ class Engine{
             manager: this.clickEventHandler
         })
 
+        //? Enemy Processing
+        this.enemyProcessing = new EnemyProcessing()
+
         //? Linking
         this.renderingEngine.renderers.level.dataAnimations.linkStateManager(this.stateManager)
         this.renderingEngine.linkMainLoop(this.mainLoop)
@@ -153,14 +157,26 @@ class Engine{
             type: 'levelManager',
             target: this.levelManager
         })
+      
         this.mainLoop.registerRef({
             type: 'TowersManager',
             target: this.towerStateManager
+        })
+        this.enemyStateManager.useRef({
+            type: "masterState",
+            target: this.stateManager
         })
         this.towerStateManager.useRef({
             type: "masterState",
             target: this.stateManager
         })
+        this.towerStateManager.useRef({
+            type: "enemyState",
+            target: this.enemyStateManager
+        })
+
+
+        this.renderingEngine.renderers.level.enemies.useRef(this.stateManager)
 
 
         //? OBserver Creation
@@ -168,10 +184,19 @@ class Engine{
         this.stateManager.createObserver("renderEngine", this.renderingEngine, ["currentGameWindow","currentGameStatus","currentGameLevel","selectedTower"])
         this.stateManager.createObserver("gameLoop", this.mainLoop, ["currentGameStatus"])
         this.stateManager.createObserver("level", this.levelManager, ["currentGameLevel"])
-        this.stateManager.createObserver("selectedTower", this.towerStateManager, ["selectedTower"])
+        this.stateManager.createObserver("towerState", this.towerStateManager, ["currentGameStatus"])
+        this.stateManager.createObserver("enemyState",this.enemyStateManager,["currentGameStatus"])
         this.towerStateManager.createObserver("towers",this.renderingEngine.renderers.level.towers, ["towers"])
         this.towerStateManager.createObserver("gameBoard",this.renderingEngine.renderers.level.gameBoard, ["temp"])
         this.towerStateManager.createObserver("levelManager",this.levelManager, ["towersPositions"])
+
+        // this.enemyStateManager.createObserver("")
+        
+        // this.enemyProcessing.createObserver("renderEngine",this.renderingEngine.renderers.level.enemies,["enemiesList"])
+        
+        
+
+        
         // this.stateManager.bootNotification()
 
     }

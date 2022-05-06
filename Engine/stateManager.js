@@ -15,16 +15,6 @@ class StateManager{
         }
     }
 
-    createObserver(observerName, observer, dataTargets){
-        
-        if(Object.keys(this.observers).includes(observerName)){
-            return
-        }
-        this.logInfo(`Observer added: ${observerName}`)
-        this.observers[observerName] = [observer, [...dataTargets]]
-        this.notifyObserver(observerName)
-    }
-
     notifyObserver(observer){
         if(observer){
             let data = {
@@ -54,6 +44,51 @@ class StateManager{
     
 }
 
+class EnemiesStateManager extends StateManager{
+    constructor(){
+        super()
+        this.state = {
+            enemies: []
+        }
+        this.refs = {
+
+        }
+    }
+    
+    generateWave(){
+        let count = Math.random()*3 + 3
+        for(let i = 0; i < count; i++){
+            let rng = Math.random()*100 
+            let newEnemy;
+            if(rng > 75){
+                newEnemy = new HeavyEnemy()
+            }
+            else{
+                newEnemy = new BasicEnemy()
+            }
+            newEnemy.setSelfIndex(i+1)
+            this.state.enemies.push(newEnemy)
+        }
+        console.warn("[ENEMY STATE MANAGER] Wave",this.state.enemies)
+    }
+
+    getNotification(data){
+        console.warn("[ENEMY STATE MANAGER] Notification",data)
+        if(data.currentGameStatus == 'play'){
+            this.state.enemies = []
+            this.generateWave()
+            Object.keys(this.observers).forEach(observer => {
+                this.notifyObserver(observer)
+            })
+        }
+    }
+
+    useRef(ref){
+        this.refs[ref.type] = ref.target
+    }
+
+}
+
 class TowersStateManager extends StateManager{
     constructor(){
         super()
@@ -77,12 +112,10 @@ class TowersStateManager extends StateManager{
     }
 
     getNotification(data){
-        console.warn("Tower State Notification")
-        let tower = data.selectedTower
-        this.state.towers.forEach((towerData,i) => {
-            if(towerData.positionRef.x == tower.positionRef.x){
-                this.state.towers[i] = tower
-            }
+        console.warn("Tower State Notification",data)
+    
+        this.state.towers.forEach(tower => {
+            tower.attackToggle()
         })
     }
 
@@ -148,15 +181,18 @@ class TowersStateManager extends StateManager{
                 break;
             }
         }
+        console.warn("FLAG",flag);
         if(flag){
             //! Case when tower already built
             console.warn("Clicked on already built tower")
-
+            let tower = this.state.towers[flag-1]
+            console.warn("Tower",tower);
             this.stateManagersRef["masterState"].updateState({
                 currentGameWindow: "towerUpgrade",
                 currentGameStatus: "pause",
                 selectedTower: this.state.towers[flag-1]
             })
+            flag = 0
         }
         else{
             if(!this.buildStatus){
@@ -193,10 +229,17 @@ class TowersStateManager extends StateManager{
         else if(towerType == 'bombard'){
             tower = new BombardTower(this.posRef.x, this.posRef.y)
         }
+
+        tower.setRef({
+            type: "enemyState",
+            target: this.stateManagersRef["enemyState"]
+        })
+
+        tower.attackToggle()
+
         this.state.towers.push(tower)
 
         let processed = []
-
 
         this.stateManagersRef["masterState"].updateState({
             coins: this.stateManagersRef["masterState"].getCoins - tower.price
@@ -226,32 +269,6 @@ class TowersStateManager extends StateManager{
      
     }
 
-    callHide(position){
-
-    }
-
-    createTower(){
-        // console.groupCollapsed("towerStateChange |  Modifying state")
-        // console.log("previous state", x, y)
-        // this.state.towers.push(towerData)
-        
-
-        // // Object.keys(this.observers).forEach(observer => {
-        // //     let initialData = []
-
-        // //     this.state.towers.forEach(tower => {
-        // //         initialData.push(tower.dataForRenderer)
-        // //     })
-        // //     this.rendererNotify(observer,{
-        // //         type: 'image',
-        // //         data: initialData
-        // //     })
-        // // })
-        // console.log("next state", this.state)
-        // console.groupEnd()
-        
-    
-    }
     reset(){
         this.state.towers = [
                 
@@ -268,38 +285,10 @@ class TowersStateManager extends StateManager{
         })
     }
 
-    // updateState(val){
-    //     console.groupCollapsed("towerStateChange |  Modifying state")
-    //     console.log("previous state", this.state)
-    //     console.log(val)
+    get getEnemies(){
+        return this.state.enemies
+    }
 
-    //     let flag = 0;
-    //     Object.keys(val).forEach(key => {
-    //         if(this.state[key] != val[key] || !Object.keys(this.state).includes(key)){
-    //             this.state[key] = val[key]
-    //             flag = 1
-    //         }
-            
-    //     })
-    //     if(flag){
-            
-    //         Object.keys(this.observers).forEach(observer => {
-    //             let match = 0;
-    //             Object.keys(val).forEach(key => {
-    //                 if(this.observers[observer][1].includes(key)){
-    //                     match = 1
-    //                 }
-    //             })
-    //             if(match){
-    //                 this.notifyObserver(observer)
-    //             }
-                
-    //         })
-    //     }
-    //     console.log("new state", this.state)
-    //     console.groupEnd()
-        
-    // }
 }
 
 
@@ -314,8 +303,8 @@ class PlayerStateManager extends StateManager{
             characterLevel: 1,
             xp_points: 0,
             bonusCoins: 0,
-            bonusMana: 0,
-            maxMana: 100,
+            bonusMana: 4,
+            maxMana: 150,
             manaLimit: 200,
             coins: GAME_CONFIG.INITIAL_COINS,
             mana: 0,
@@ -394,6 +383,15 @@ class PlayerStateManager extends StateManager{
             }
         }, 1000);
     }
+
+    fetchState(){
+        console.warn("Fetching state")
+        let data = localStorage.getItem("save")
+        if(data){
+            console.warn("Loading saved state")
+            this.state = data
+        }
+    }
     
     
 
@@ -402,19 +400,24 @@ class PlayerStateManager extends StateManager{
     updateState(val){
         console.groupCollapsed("playerStateChange |  Modifying state")
         console.log("previous state", this.state)
-        console.log(val)
-
+        // console.log(val)
+        console.warn(val)
         let flag = 0;
         Object.keys(val).forEach(key => {
             if(key == 'selectedTower'){
-                
                 this.state[key] = val[key]
-
                 flag = 1;
             }
             if(this.state[key] != val[key] || !Object.keys(this.state).includes(key)){
                 this.state[key] = val[key]
-                if((key == 'currentGameStatus' && val[key] == 'play') || (key == 'currentGameStatus' && val[key] == 'resume')){
+           
+                if(val[key] == 'continue'){
+                    this.fetchState()
+                }
+              
+
+                if(key == 'currentGameStatus' && ["play","resume","continue"].includes(val[key])){
+                    
                     this.startManaUpdate()
                 }
                 else if(key == 'currentGameStatus' && val[key] == 'pause'){

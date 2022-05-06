@@ -117,14 +117,7 @@ class LevelManager{
             newHTMLElement.style.width = `${this.basicProperties.width*2}px`;
             newHTMLElement.style.height = `${this.basicProperties.height*2}px`;
             newHTMLElement.addEventListener("click", () => {
-                // if(this.activePositions.length > 0 && this.activePositions.includes(position)){
-                 
-                //     this.towersManager.callHide(position)
-                
-                // }
-                // else{
-                //     this.towersManager.callTowerBuild(x,y)
-                // }
+             
                 this.towersManager.callTowerClick(x,y,i)
                 
                 

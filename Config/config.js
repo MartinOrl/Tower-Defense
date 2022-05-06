@@ -110,8 +110,15 @@ const IMG_ASSETS_LIST = {
             level_2: new IMG_ASSET("./Assets/Towers/bombard_2.png"),
             level_3: new IMG_ASSET("./Assets/Towers/bombard_3.png")
         }
-
-
+    },
+    enemies: {
+        heavy: {
+            heavy_1: new IMG_ASSET("./Assets/Enemies/heavy_1.png"),
+            heavy_1_sprite: new IMG_ASSET("./Assets/Enemies/heavy_1_sprite.webp")
+        },
+        basic: {
+            basic_1_sprite: new IMG_ASSET("./Assets/Enemies/basic_1_sprite.png")
+        }
     }
 
 }

@@ -6,6 +6,36 @@ class Tower{
         this.positionRef = {
 
         }
+        this.enemyTarget = false
+
+        this.refs = {
+
+        }
+
+        this.attack = false
+        
+    }
+
+    setRef(ref){
+        this.refs[ref.type] = ref.target
+    }
+
+    attackToggle(){
+        console.warn("Tower Status Toggled")
+        this.attack = !this.attack
+        if(this.attack){
+            console.warn("Attacking")
+            if(this.enemyTarget){
+
+            }
+            else{
+                let enemies = this.refs["enemyState"].getEnemies()
+                enemies.for
+            }
+        }
+        else{
+            console.warn("Stopping attack")
+        }
     }
 
     
