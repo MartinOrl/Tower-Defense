@@ -14,8 +14,8 @@ class EnemyProcessing{
     }
 
     start(){
-        
-        this.generateWave()
+        console.warn("aaaa")
+        // this.generateWave()
         // this.generateWave()
         // setInterval(() => {
         //     this.generateWave()
@@ -36,7 +36,7 @@ class EnemyProcessing{
             
             this.enemiesList.push(newEnemy)
         }
-        this.notifyObserver("renderEngine")
+        
     }
 
     notifyObserver(observer){

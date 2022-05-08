@@ -1,13 +1,17 @@
 class ClickEventManager{
     constructor(){
         this.stateManager;
+
     }
 
     linkStateManager(manager){
         this.stateManager = manager
     }
 
+
     fireEvent(event){
+       
+        
         //* STRUCTURE  */
         //?
         //?  @action - specifies action from config
@@ -36,6 +40,7 @@ class ClickEventManager{
             let tower = this.stateManager.state.selectedTower
             if(tower.level < 3){
                 tower.upgrade()
+                console.warn(tower)
                 this.stateManager.updateState({
                     selectedTower: tower
                 })
@@ -68,14 +73,18 @@ class LevelManager{
             height: 35
         }
 
-        this.activePositions = []
+   
         this.level;
         this.towersManager;
+        this.enemiesManager;
+   
     }
 
     linkTowerManager(manager){
         this.towersManager = manager
     }
+
+  
 
     setPositions(level){
         this.towersPositions = TOWER_PLACE_POSITIONS[`level_${level}`]
@@ -83,23 +92,17 @@ class LevelManager{
     }
 
     getNotification(data){
-       
+        console.log("Level Manager Update", data)
         if(!Array.isArray(data) &&  data.currentGameLevel){
       
             this.setPositions(data.currentGameLevel);
-        } else{
-            console.log(data)
-            this.activePositions = data.towersPositions
-        }
+        } 
         
     }
 
-    updatePositions(data){
-
-    }
-
-    resetPositions(){
-        this.activePositions = []
+    updatePositions(level){
+        this.towersPositions = TOWER_PLACE_POSITIONS[`level_${level}`]
+        this.createExtraHTML(this.towersPositions)
     }
 
     createHTML(){
@@ -135,13 +138,14 @@ class LevelManager{
             let {x,y} = position
             let newHTMLElement = document.createElement("span")
             newHTMLElement.classList.add(`towerEventExtra`)
-            newHTMLElement.style.left = `${position.x}px`;
-            newHTMLElement.style.top = `${position.y}px`;
+            newHTMLElement.style.left = `${x}px`;
+            newHTMLElement.style.top = `${y}px`;
             newHTMLElement.style.width = `48px`;
             newHTMLElement.style.height = `48px`;
             newHTMLElement.addEventListener("click", () => {
                 let tower = i == 0 ? 'archer' : i == 1 ? "magic" : "bombard"
-                this.towersManager.buildTower(tower,x,y)
+  
+                this.towersManager.buildTower(tower)
             })
             target.appendChild(newHTMLElement)
         })
@@ -189,13 +193,14 @@ class MasterManager{
 }
 
 class AudioManager{
-    constructor(){
-        this.audioPlayer = new Audio("./Assets/Music/background.wav")
+    constructor(url){
+        this.audioPlayer = new Audio(url)
 
         this.oldVolume = localStorage.getItem("audio-cfg") != null ? localStorage.getItem("audio-cfg") : 0.3;
         this.volume = localStorage.getItem("audio-cfg") != null ? localStorage.getItem("audio-cfg") : 0.3;
 
         //? Basic configuration
+        this.audioPlayer.volume = 1
         this.audioPlayer.muted = false
         this.audioPlayer.loop = true
         this.audioPlayer.addEventListener = true
@@ -214,6 +219,14 @@ class AudioManager{
         this.observers.forEach(observer => {
             observer.notify(this.volume)
         })
+    }
+
+    play(){
+        console.warn("Play Toggle")
+        this.audioPlayer.play()
+    }
+    stop(){
+        this.audioPlayer.pause()
     }
 
     modifyVolume(newVolume){

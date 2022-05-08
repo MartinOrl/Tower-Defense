@@ -1,7 +1,10 @@
 const GAME_CONFIG = {
-    INITIAL_COINS: 250,
+    INITIAL_COINS: 750,
     INITIAL_MANA: 0,
-    MAX_MANA: 100
+    MAX_MANA: 100,
+    MAX_DAMAGE: 150,
+    MAX_SPEED: 2,
+    MAX_RANGE: 350
 }
 
 const ActionTypes = {
@@ -41,6 +44,8 @@ const IMG_ASSETS_LIST = {
         bar_blue: new IMG_ASSET("./Assets/Bars/bar_blue.webp"),
         bar_yellow: new IMG_ASSET("./Assets/Bars/bar_yellow.webp"),
         bar_red: new IMG_ASSET("./Assets/Bars/bar_red.webp"),
+        healthBar: new IMG_ASSET("./Assets/Bars/health.png"),
+        bar_red_opaque: new IMG_ASSET("./Assets/Bars/bar_red_opaque.png",true),
         bar_blue_opaque: new IMG_ASSET("./Assets/Bars/bar_blue_transparent.webp",true),
         bar_yellow_opaque: new IMG_ASSET("./Assets/Bars/bar_yellow_transparent.webp",true),
        
@@ -73,10 +78,12 @@ const IMG_ASSETS_LIST = {
         level_3: new IMG_ASSET("./Assets/Levels/level_3.webp"),
     },
     misc: {
+        board_info: new IMG_ASSET("./Assets/Misc/board_info.png"),
         board_high: new IMG_ASSET("./Assets/Misc/board_high.webp"),
         board_med: new IMG_ASSET("./Assets/Misc/board_med.webp"),
         board_wide: new IMG_ASSET("./Assets/Misc/board_wide.webp"),
         gem: new IMG_ASSET("./Assets/Misc/gem.png"),
+        heart: new IMG_ASSET("./Assets/Misc/heart.png"),
         lose_star: new IMG_ASSET("./Assets/Misc/lose_star.webp"),
         lose: new IMG_ASSET("./Assets/Misc/lose.webp"),
         player: new IMG_ASSET("./Assets/Misc/player.webp"),
@@ -113,11 +120,18 @@ const IMG_ASSETS_LIST = {
     },
     enemies: {
         heavy: {
-            heavy_1: new IMG_ASSET("./Assets/Enemies/heavy_1.png"),
-            heavy_1_sprite: new IMG_ASSET("./Assets/Enemies/heavy_1_sprite.webp")
+            heavy_1_sprite: new IMG_ASSET("./Assets/Enemies/heavy_1_sprite.webp"),
+            heavy_1_sprite_rev: new IMG_ASSET("./Assets/Enemies/heavy_1_sprite_rev.png"),
+            heavy_1: new IMG_ASSET("./Assets/Enemies/heavy_1.png")
         },
         basic: {
-            basic_1_sprite: new IMG_ASSET("./Assets/Enemies/basic_1_sprite.png")
+            basic_1_sprite: new IMG_ASSET("./Assets/Enemies/basic_1_sprite.png"),
+            basic_1_sprite_rev: new IMG_ASSET("./Assets/Enemies/basic_1_sprite_rev.png"),
+        },
+        boss: {
+            boss_1: new IMG_ASSET("./Assets/Enemies/boss_1.png"),
+            boss_1_rev: new IMG_ASSET("./Assets/Enemies/boss_1_rev.png"),
+
         }
     }
 
@@ -140,21 +154,97 @@ const LAYERS = {
 const TOWER_PLACE_POSITIONS = {
     level_1: [
         {
-            x: 200,
-            y: 600
+            x: 1120,
+            y: 263
         },
         {
-            x: 548,
-            y: 485
+            x: 855,
+            y: 263
         },
         {
-            x: 842,
-            y: 512
+            x: 585,
+            y: 263
         },
         {
-            x: 1104,
-            y: 300
+            x: 1080,
+            y: 480
         },
+        {
+            x: 795,
+            y: 480
+        },
+        {
+            x: 505,
+            y: 480
+        },
+        {
+            x: 363,
+            y: 640
+        },
+    ],
+    level_2: [
+        {
+            x: 1088,
+            y: 420
+        },
+        {
+            x: 840,
+            y: 420
+        },
+        {
+            x: 840,
+            y: 200
+        },
+        {
+            x: 960,
+            y: 635
+        },
+        {
+            x: 525,
+            y: 230
+        },
+        {
+            x: 190,
+            y: 265
+        },
+        {
+            x: 235,
+            y: 470
+        },
+        {
+            x: 195,
+            y: 680
+        }
+    ],
+    level_3: [
+        {
+            x: 580,
+            y: 650
+        },
+        {
+            x: 475,
+            y: 435
+        },
+        {
+            x: 675,
+            y: 430
+        },
+        {
+            x: 965,
+            y: 430
+        },
+        {
+            x: 585,
+            y: 206
+        },
+        {
+            x: 785,
+            y: 202
+        },
+        {
+            x: 980,
+            y: 202
+        }
     ]
 }
 

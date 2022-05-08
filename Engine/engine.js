@@ -67,7 +67,6 @@ class MainGameLoop{
             renderer.clearCanvas()
         })
         this.refs['levelManager'].towersManager.reset()
-        this.refs['levelManager'].resetPositions()
     }
 
     stop(){
@@ -87,10 +86,16 @@ class MainGameLoop{
     }
 
     initialize(){
+        this.refs["audioManager"].play()
+        console.warn("MainLoop Initialization")
+        this.refs["enemyState"].reset()
+        this.refs["towerState"].reset()
+        this.refs["levelManager"].updatePositions(this.refs["stateManager"].getGameLevel)
         this.refs['stateManager'].updateState({
             mana: 0,
-            coins: 0
+            coins: GAME_CONFIG.INITIAL_COINS
         })
+        this.refs['levelManager'].towersManager.reset()
         Object.values(this.renderers).forEach(renderer => {
             renderer.render()
         })
@@ -123,7 +128,7 @@ class Engine{
         this.enemyStateManager = new EnemiesStateManager()
 
         //? Audio Managers
-        this.audioManager = new AudioManager()
+        this.audioManager = new AudioManager("./Assets/Audio/background.wav")
 
         //? Event Managers
         this.clickEventHandler = new ClickEventManager()
@@ -140,15 +145,17 @@ class Engine{
             manager: this.clickEventHandler
         })
 
-        //? Enemy Processing
-        this.enemyProcessing = new EnemyProcessing()
+        // //? Enemy Processing
+        // this.enemyProcessing = new EnemyProcessing()
 
         //? Linking
         this.renderingEngine.renderers.level.dataAnimations.linkStateManager(this.stateManager)
         this.renderingEngine.linkMainLoop(this.mainLoop)
         this.clickEventHandler.linkStateManager(this.stateManager)
         this.levelManager.linkTowerManager(this.towerStateManager)
+        
         this.mainLoop.linkRenderers(this.renderingEngine.renderers.level)
+ 
         this.mainLoop.registerRef({
             type: 'stateManager',
             target: this.stateManager
@@ -157,11 +164,19 @@ class Engine{
             type: 'levelManager',
             target: this.levelManager
         })
-      
         this.mainLoop.registerRef({
-            type: 'TowersManager',
+            type: 'towerState',
             target: this.towerStateManager
         })
+        this.mainLoop.registerRef({
+            type: "enemyState",
+            target: this.enemyStateManager
+        })
+        this.mainLoop.registerRef({
+            type: "audioManager",
+            target: this.audioManager
+        })
+
         this.enemyStateManager.useRef({
             type: "masterState",
             target: this.stateManager
@@ -181,14 +196,15 @@ class Engine{
 
         //? OBserver Creation
         this.stateManager.createObserver("audio", this.audioManager, ["volume"])
-        this.stateManager.createObserver("renderEngine", this.renderingEngine, ["currentGameWindow","currentGameStatus","currentGameLevel","selectedTower"])
-        this.stateManager.createObserver("gameLoop", this.mainLoop, ["currentGameStatus"])
+        this.stateManager.createObserver("renderEngine", this.renderingEngine, ["currentGameWindow","currentGameStatus","currentGameLevel","selectedTower","health","coins"])
+        this.stateManager.createObserver("gameLoop", this.mainLoop, ["currentGameStatus","currentGameLevel"])
         this.stateManager.createObserver("level", this.levelManager, ["currentGameLevel"])
-        this.stateManager.createObserver("towerState", this.towerStateManager, ["currentGameStatus"])
-        this.stateManager.createObserver("enemyState",this.enemyStateManager,["currentGameStatus"])
+        this.stateManager.createObserver("towerState", this.towerStateManager, ["currentGameStatus","currentGameLevel"])
+        this.stateManager.createObserver("enemyState",this.enemyStateManager,["currentGameStatus","currentGameLevel"])
         this.towerStateManager.createObserver("towers",this.renderingEngine.renderers.level.towers, ["towers"])
         this.towerStateManager.createObserver("gameBoard",this.renderingEngine.renderers.level.gameBoard, ["temp"])
         this.towerStateManager.createObserver("levelManager",this.levelManager, ["towersPositions"])
+        this.enemyStateManager.createObserver("enemyRenderer", this.renderingEngine.renderers.level.enemies, ["enemies"])
 
         // this.enemyStateManager.createObserver("")
         
@@ -208,6 +224,7 @@ class Engine{
         document.querySelector(".level").style.background = `url(${image})`
 
         this.renderingEngine.boot()
+        console.warn(this.audioManager)
     }
 
 

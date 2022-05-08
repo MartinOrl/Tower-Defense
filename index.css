@@ -37,7 +37,9 @@ canvas{
     width: 1280px;
     height: 720px;
     background: #000;
+    overflow: hidden;
 }
+
 
 
 .actions{
@@ -157,6 +159,15 @@ canvas{
     display: block;
     content: '';
     z-index: 600;
+}
+
+
+.history{
+    background: #00A3FF !important
+}
+
+.boss{
+    background: #F00;
 }
 
 #pathHelper{
